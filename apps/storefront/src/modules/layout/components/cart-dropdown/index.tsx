@@ -117,6 +117,8 @@ const CartDropdown = ({
                     })
                     .map((item) => {
                       const customImageUrl = getCustomImageUrl(item)
+                      const selectedImageUrl = getSelectedImageUrl(item)
+                      const selectedDesignName = getSelectedDesignName(item)
                       const itemHref = customImageUrl
                         ? getCustomPageHref(item)
                         : `/products/${item.product_handle}`
@@ -135,7 +137,7 @@ const CartDropdown = ({
                             <CustomLineItemThumbnail item={item} />
                           ) : (
                             <Thumbnail
-                              thumbnail={item.thumbnail}
+                              thumbnail={selectedImageUrl ?? item.thumbnail}
                               images={item.variant?.product?.images}
                               size="square"
                             />
@@ -153,6 +155,11 @@ const CartDropdown = ({
                                     {item.title}
                                   </LocalizedClientLink>
                                 </h3>
+                                {selectedDesignName && (
+                                  <span className="text-xs text-ui-fg-subtle">
+                                    Design: {selectedDesignName}
+                                  </span>
+                                )}
                                 <LineItemOptions
                                   variant={item.variant}
                                   data-testid="cart-item-variant"
@@ -257,6 +264,18 @@ function getCustomPageHref(item: HttpTypes.StoreCartLineItem) {
   }
 
   return "/custom/hexagon"
+}
+
+function getSelectedImageUrl(item: HttpTypes.StoreCartLineItem) {
+  const value = item.metadata?.selected_image_url
+
+  return typeof value === "string" && value ? value : null
+}
+
+function getSelectedDesignName(item: HttpTypes.StoreCartLineItem) {
+  const value = item.metadata?.selected_design_name
+
+  return typeof value === "string" && value ? value : null
 }
 
 export default CartDropdown

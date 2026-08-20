@@ -1,16 +1,21 @@
 import { Container, Heading, Text } from "@modules/common/components/ui"
 
-import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isSepay, isStripeLike, paymentInfoMap } from "@lib/constants"
 import Divider from "@modules/common/components/divider"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
+import SepayQrPanel from "@modules/checkout/components/sepay-qr"
 
 type PaymentDetailsProps = {
   order: HttpTypes.StoreOrder
 }
 
 const PaymentDetails = ({ order }: PaymentDetailsProps) => {
-  const payment = order.payment_collections?.[0].payments?.[0]
+  const paymentCollection = order.payment_collections?.[0]
+  const payment = paymentCollection?.payments?.[0]
+  const pendingSepaySession = paymentCollection?.payment_sessions?.find(
+    (session) => isSepay(session.provider_id) && session.status !== "canceled"
+  )
 
   return (
     <div>
@@ -18,6 +23,18 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
         Payment
       </Heading>
       <div>
+        {!payment && pendingSepaySession && (
+          <div className="flex flex-col w-full">
+            <Text className="txt-medium-plus text-ui-fg-base mb-1">
+              Đang chờ thanh toán
+            </Text>
+            <SepayQrPanel
+              data={pendingSepaySession.data}
+              amount={order.total}
+              currencyCode={order.currency_code}
+            />
+          </div>
+        )}
         {payment && (
           <div className="flex items-start gap-x-1 w-full">
             <div className="flex flex-col w-1/3">

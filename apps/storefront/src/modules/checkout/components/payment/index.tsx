@@ -1,12 +1,13 @@
 "use client"
 import { RadioGroup } from "@headlessui/react"
-import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isSepay, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
   StripeCardContainer,
 } from "@modules/checkout/components/payment-container"
+import SepayQrPanel from "@modules/checkout/components/sepay-qr"
 import Divider from "@modules/common/components/divider"
 import {
   Button,
@@ -47,7 +48,7 @@ const Payment = ({
   const setPaymentMethod = async (method: string) => {
     setError(null)
     setSelectedPaymentMethod(method)
-    if (isStripeLike(method)) {
+    if (isStripeLike(method) || isSepay(method)) {
       await initiatePaymentSession(cart, {
         provider_id: method,
       })
@@ -163,7 +164,17 @@ const Payment = ({
                         paymentInfoMap={paymentInfoMap}
                         paymentProviderId={paymentMethod.id}
                         selectedPaymentOptionId={selectedPaymentMethod}
-                      />
+                      >
+                        {isSepay(paymentMethod.id) &&
+                          selectedPaymentMethod === paymentMethod.id &&
+                          activeSession?.provider_id === paymentMethod.id && (
+                            <SepayQrPanel
+                              data={activeSession.data}
+                              amount={cart.total}
+                              currencyCode={cart.currency_code}
+                            />
+                          )}
+                      </PaymentContainer>
                     )}
                   </div>
                 ))}
@@ -209,39 +220,50 @@ const Payment = ({
 
         <div className={isOpen ? "hidden" : "block"}>
           {cart && paymentReady && activeSession ? (
-            <div className="flex items-start gap-x-1 w-full">
-              <div className="flex flex-col w-1/3">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Payment method
-                </Text>
-                <Text
-                  className="txt-medium text-ui-fg-subtle"
-                  data-testid="payment-method-summary"
-                >
-                  {paymentInfoMap[activeSession?.provider_id]?.title ||
-                    activeSession?.provider_id}
-                </Text>
-              </div>
-              <div className="flex flex-col w-1/3">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Payment details
-                </Text>
-                <div
-                  className="flex gap-2 txt-medium text-ui-fg-subtle items-center"
-                  data-testid="payment-details-summary"
-                >
-                  <Container className="flex items-center h-7 w-fit p-2 bg-ui-button-neutral-hover">
-                    {paymentInfoMap[selectedPaymentMethod]?.icon || (
-                      <CreditCard />
-                    )}
-                  </Container>
-                  <Text>
-                    {isStripeLike(selectedPaymentMethod) && cardBrand
-                      ? cardBrand
-                      : "Another step will appear"}
+            <div className="flex flex-col w-full">
+              <div className="flex items-start gap-x-1 w-full">
+                <div className="flex flex-col w-1/3">
+                  <Text className="txt-medium-plus text-ui-fg-base mb-1">
+                    Payment method
+                  </Text>
+                  <Text
+                    className="txt-medium text-ui-fg-subtle"
+                    data-testid="payment-method-summary"
+                  >
+                    {paymentInfoMap[activeSession?.provider_id]?.title ||
+                      activeSession?.provider_id}
                   </Text>
                 </div>
+                <div className="flex flex-col w-1/3">
+                  <Text className="txt-medium-plus text-ui-fg-base mb-1">
+                    Payment details
+                  </Text>
+                  <div
+                    className="flex gap-2 txt-medium text-ui-fg-subtle items-center"
+                    data-testid="payment-details-summary"
+                  >
+                    <Container className="flex items-center h-7 w-fit p-2 bg-ui-button-neutral-hover">
+                      {paymentInfoMap[selectedPaymentMethod]?.icon || (
+                        <CreditCard />
+                      )}
+                    </Container>
+                    <Text>
+                      {isStripeLike(selectedPaymentMethod) && cardBrand
+                        ? cardBrand
+                        : isSepay(selectedPaymentMethod)
+                        ? "Quét mã QR để thanh toán"
+                        : "Another step will appear"}
+                    </Text>
+                  </div>
+                </div>
               </div>
+              {isSepay(activeSession.provider_id) && (
+                <SepayQrPanel
+                  data={activeSession.data}
+                  amount={cart.total}
+                  currencyCode={cart.currency_code}
+                />
+              )}
             </div>
           ) : paidByGiftcard ? (
             <div className="flex flex-col w-1/3">

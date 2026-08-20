@@ -1,7 +1,8 @@
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { flattenProductImages } from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
-import Product from "../product-preview"
+import ProductImageCard from "../product-image-card"
 
 type RelatedProductsProps = {
   product: HttpTypes.StoreProduct
@@ -46,6 +47,8 @@ export default async function RelatedProducts({
     return null
   }
 
+  const imageCards = flattenProductImages(products)
+
   return (
     <div className="product-page-constraint">
       <div className="flex flex-col items-center text-center mb-16">
@@ -57,10 +60,10 @@ export default async function RelatedProducts({
         </p>
       </div>
 
-      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8">
-        {products.map((product) => (
-          <li key={product.id}>
-            <Product region={region} product={product} />
+      <ul className="grid grid-cols-2 small:grid-cols-4 medium:grid-cols-6 gap-x-3 gap-y-6">
+        {imageCards.map((card) => (
+          <li key={`${card.product.id}-${card.imageIndex}`}>
+            <ProductImageCard card={card} region={region} />
           </li>
         ))}
       </ul>

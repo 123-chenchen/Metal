@@ -9,8 +9,12 @@ export const listCartPaymentMethods = async (regionId: string) => {
     ...(await getAuthHeaders()),
   }
 
+  // Short revalidate window (rather than the indefinite force-cache used
+  // elsewhere) so enabling/disabling a payment provider in the admin shows
+  // up here without needing a storefront restart or manual cache purge.
   const next = {
     ...(await getCacheOptions("payment_providers")),
+    revalidate: 60,
   }
 
   return sdk.client
@@ -21,7 +25,6 @@ export const listCartPaymentMethods = async (regionId: string) => {
         query: { region_id: regionId },
         headers,
         next,
-        cache: "force-cache",
       }
     )
     .then(({ payment_providers }) =>

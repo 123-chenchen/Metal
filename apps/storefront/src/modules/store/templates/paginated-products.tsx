@@ -1,7 +1,8 @@
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { flattenProductImages } from "@lib/util/flatten-product-images"
 import { OptionValueIds } from "@lib/util/product-option-filters"
-import ProductPreview from "@modules/products/components/product-preview"
+import ProductImageCard from "@modules/products/components/product-image-card"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
@@ -69,17 +70,18 @@ export default async function PaginatedProducts({
   })
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+  const imageCards = flattenProductImages(products)
 
   return (
     <>
       <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
+        className="grid grid-cols-2 w-full small:grid-cols-4 medium:grid-cols-6 gap-x-3 gap-y-6"
         data-testid="products-list"
       >
-        {products.map((p) => {
+        {imageCards.map((card) => {
           return (
-            <li key={p.id}>
-              <ProductPreview product={p} region={region} />
+            <li key={`${card.product.id}-${card.imageIndex}`}>
+              <ProductImageCard card={card} region={region} />
             </li>
           )
         })}

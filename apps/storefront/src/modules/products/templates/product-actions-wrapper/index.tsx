@@ -1,4 +1,5 @@
 import { listProducts } from "@lib/data/products"
+import { SelectedImage } from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
 import ProductActions from "@modules/products/components/product-actions"
 
@@ -8,9 +9,11 @@ import ProductActions from "@modules/products/components/product-actions"
 export default async function ProductActionsWrapper({
   id,
   region,
+  selectedImage,
 }: {
   id: string
   region: HttpTypes.StoreRegion
+  selectedImage: SelectedImage | null
 }) {
   const product = await listProducts({
     queryParams: { id: [id] },
@@ -21,5 +24,11 @@ export default async function ProductActionsWrapper({
     return null
   }
 
-  return <ProductActions product={product} region={region} />
+  return (
+    <ProductActions
+      product={product}
+      region={region}
+      selectedImage={selectedImage}
+    />
+  )
 }

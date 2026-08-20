@@ -2,6 +2,7 @@ import React, { Suspense } from "react"
 
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
+import ProductMoreDesigns from "@modules/products/components/product-more-designs"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
@@ -9,6 +10,7 @@ import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
+import { flattenProductImages, SelectedImage } from "@lib/util/flatten-product-images"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -17,6 +19,7 @@ type ProductTemplateProps = {
   region: HttpTypes.StoreRegion
   countryCode: string
   images: HttpTypes.StoreProductImage[]
+  selectedImage: SelectedImage | null
 }
 
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
@@ -24,10 +27,15 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   region,
   countryCode,
   images,
+  selectedImage,
 }) => {
   if (!product || !product.id) {
     return notFound()
   }
+
+  const moreDesignCards = flattenProductImages([product]).filter(
+    (card) => card.imageIndex !== selectedImage?.index
+  )
 
   return (
     <>
@@ -40,7 +48,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           <ProductTabs product={product} />
         </div>
         <div className="block w-full relative">
-          <ImageGallery images={images} />
+          <ImageGallery image={images[0]} />
         </div>
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
           <ProductOnboardingCta />
@@ -50,12 +58,20 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 disabled={true}
                 product={product}
                 region={region}
+                selectedImage={selectedImage}
               />
             }
           >
-            <ProductActionsWrapper id={product.id} region={region} />
+            <ProductActionsWrapper
+              id={product.id}
+              region={region}
+              selectedImage={selectedImage}
+            />
           </Suspense>
         </div>
+      </div>
+      <div className="content-container my-16 small:my-32">
+        <ProductMoreDesigns cards={moreDesignCards} region={region} />
       </div>
       <div
         className="content-container my-16 small:my-32"

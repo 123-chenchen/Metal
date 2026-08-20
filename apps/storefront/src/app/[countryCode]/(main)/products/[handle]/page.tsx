@@ -2,12 +2,13 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { SelectedImage } from "@lib/util/flatten-product-images"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
-  searchParams: Promise<{ v_id?: string }>
+  searchParams: Promise<{ v_id?: string; img?: string }>
 }
 
 export async function generateStaticParams() {
@@ -69,6 +70,56 @@ function getImagesForVariant(
   return product.images?.filter((i) => imageIdsMap.has(i.id)) ?? null
 }
 
+// Reorders `images` so the design picked on the listing page (via the
+// `img` search param, 1-based index into the full `product.images`) is
+// first/prominent. Falls back to the first image when there's no valid
+// `img` param (e.g. a direct PDP visit) or the selected image isn't part
+// of the current variant-filtered set.
+function resolveSelectedImage(
+  product: HttpTypes.StoreProduct,
+  images: HttpTypes.StoreProductImage[] | null | undefined,
+  imgParam: string | undefined
+): { images: HttpTypes.StoreProductImage[]; selectedImage: SelectedImage | null } {
+  const list = images ?? []
+
+  if (!list.length) {
+    return { images: list, selectedImage: null }
+  }
+
+  const allImages = product.images ?? []
+  const requestedIndex = imgParam ? parseInt(imgParam, 10) : NaN
+  const requestedImage =
+    Number.isInteger(requestedIndex) && requestedIndex >= 1
+      ? allImages[requestedIndex - 1]
+      : undefined
+
+  const selectedIndexInList = requestedImage
+    ? list.findIndex((image) => image.id === requestedImage.id)
+    : -1
+
+  const reordered =
+    selectedIndexInList > 0
+      ? [
+          list[selectedIndexInList],
+          ...list.slice(0, selectedIndexInList),
+          ...list.slice(selectedIndexInList + 1),
+        ]
+      : list
+
+  const selected = reordered[0]
+  const selectedIndex =
+    allImages.findIndex((image) => image.id === selected.id) + 1 || 1
+
+  return {
+    images: reordered,
+    selectedImage: {
+      url: selected.url ?? "",
+      index: selectedIndex,
+      designName: `${product.title} ${selectedIndex}`,
+    },
+  }
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const { handle } = params
@@ -114,18 +165,24 @@ export default async function ProductPage(props: Props) {
     queryParams: { handle: params.handle },
   }).then(({ response }) => response.products[0])
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
-
   if (!pricedProduct) {
     notFound()
   }
+
+  const variantImages = getImagesForVariant(pricedProduct, selectedVariantId)
+  const { images, selectedImage } = resolveSelectedImage(
+    pricedProduct,
+    variantImages,
+    searchParams.img
+  )
 
   return (
     <ProductTemplate
       product={pricedProduct}
       region={region}
       countryCode={params.countryCode}
-      images={images ?? []}
+      images={images}
+      selectedImage={selectedImage}
     />
   )
 }

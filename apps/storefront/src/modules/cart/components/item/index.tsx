@@ -43,6 +43,8 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
   const maxQuantity = 10
   const customImageUrl = getCustomImageUrl(item)
+  const selectedImageUrl = getSelectedImageUrl(item)
+  const selectedDesignName = getSelectedDesignName(item)
   const itemHref = customImageUrl
     ? getCustomPageHref(item)
     : `/products/${item.product_handle}`
@@ -61,7 +63,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
             <CustomLineItemThumbnail item={item} />
           ) : (
             <Thumbnail
-              thumbnail={item.thumbnail}
+              thumbnail={selectedImageUrl ?? item.thumbnail}
               images={item.variant?.product?.images}
               size="square"
             />
@@ -76,6 +78,14 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         >
           {item.product_title}
         </Text>
+        {selectedDesignName && (
+          <Text
+            className="txt-small text-ui-fg-subtle"
+            data-testid="product-design-name"
+          >
+            Design: {selectedDesignName}
+          </Text>
+        )}
         <LineItemOptions variant={item.variant} data-testid="product-variant" />
       </Table.Cell>
 
@@ -165,6 +175,18 @@ function getCustomPageHref(item: HttpTypes.StoreCartLineItem) {
   }
 
   return "/custom/hexagon"
+}
+
+function getSelectedImageUrl(item: HttpTypes.StoreCartLineItem) {
+  const value = item.metadata?.selected_image_url
+
+  return typeof value === "string" && value ? value : null
+}
+
+function getSelectedDesignName(item: HttpTypes.StoreCartLineItem) {
+  const value = item.metadata?.selected_design_name
+
+  return typeof value === "string" && value ? value : null
 }
 
 export default Item

@@ -2,6 +2,7 @@
 
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
+import { SelectedImage } from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
@@ -17,6 +18,7 @@ type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+  selectedImage?: SelectedImage | null
 }
 
 const optionsAsKeymap = (
@@ -31,6 +33,7 @@ const optionsAsKeymap = (
 export default function ProductActions({
   product,
   disabled,
+  selectedImage,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -102,10 +105,21 @@ export default function ProductActions({
 
     setIsAdding(true)
 
+    const image = selectedImage ?? {
+      url: product.thumbnail ?? product.images?.[0]?.url ?? "",
+      index: 1,
+      designName: `${product.title} 1`,
+    }
+
     await addToCart({
       variantId: selectedVariant.id,
       quantity: 1,
       countryCode,
+      metadata: {
+        selected_image_url: image.url,
+        selected_image_index: image.index,
+        selected_design_name: image.designName,
+      },
     })
 
     setIsAdding(false)

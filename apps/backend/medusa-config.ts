@@ -40,5 +40,23 @@ module.exports = defineConfig({
         ],
       },
     },
+    {
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/sepay",
+            id: "sepay",
+            options: {
+              bankAccountNumber: process.env.SEPAY_BANK_ACCOUNT_NUMBER,
+              bankCode: process.env.SEPAY_BANK_CODE,
+              accountHolderName: process.env.SEPAY_ACCOUNT_HOLDER_NAME,
+              apiToken: process.env.SEPAY_API_TOKEN,
+              webhookApiKey: process.env.SEPAY_WEBHOOK_API_KEY,
+            },
+          },
+        ],
+      },
+    },
   ],
 })

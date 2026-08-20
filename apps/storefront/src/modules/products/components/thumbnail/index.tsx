@@ -11,6 +11,10 @@ type ThumbnailProps = {
   isFeatured?: boolean
   className?: string
   "data-testid"?: string
+  // Flush, chrome-less rendering (no padding/bg/shadow/rounded corners) for
+  // tightly-packed grid layouts. Other callers (cart, orders) keep the
+  // default card treatment.
+  bare?: boolean
 }
 
 const Thumbnail: React.FC<ThumbnailProps> = ({
@@ -19,27 +23,37 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   size = "small",
   isFeatured,
   className,
+  bare,
   "data-testid": dataTestid,
 }) => {
   const initialImage = thumbnail || images?.[0]?.url
 
+  const sizeClassName = clx(
+    "relative w-full overflow-hidden",
+    !bare &&
+      "p-4 bg-ui-bg-subtle shadow-elevation-card-rest rounded-large group-hover:shadow-elevation-card-hover transition-shadow ease-in-out duration-150",
+    className,
+    {
+      "aspect-[11/14]": isFeatured,
+      "aspect-[9/16]": !isFeatured && size !== "square",
+      "aspect-[1/1]": size === "square",
+      "w-[180px]": size === "small",
+      "w-[290px]": size === "medium",
+      "w-[440px]": size === "large",
+      "w-full": size === "full",
+    }
+  )
+
+  if (bare) {
+    return (
+      <div className={sizeClassName} data-testid={dataTestid}>
+        <ImageOrPlaceholder image={initialImage} size={size} />
+      </div>
+    )
+  }
+
   return (
-    <Container
-      className={clx(
-        "relative w-full overflow-hidden p-4 bg-ui-bg-subtle shadow-elevation-card-rest rounded-large group-hover:shadow-elevation-card-hover transition-shadow ease-in-out duration-150",
-        className,
-        {
-          "aspect-[11/14]": isFeatured,
-          "aspect-[9/16]": !isFeatured && size !== "square",
-          "aspect-[1/1]": size === "square",
-          "w-[180px]": size === "small",
-          "w-[290px]": size === "medium",
-          "w-[440px]": size === "large",
-          "w-full": size === "full",
-        }
-      )}
-      data-testid={dataTestid}
-    >
+    <Container className={sizeClassName} data-testid={dataTestid}>
       <ImageOrPlaceholder image={initialImage} size={size} />
     </Container>
   )

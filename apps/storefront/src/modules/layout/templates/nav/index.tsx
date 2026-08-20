@@ -37,6 +37,15 @@ export default async function Nav() {
               <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
             </div>
             <div className="hidden small:flex h-full">
+              <LocalizedClientLink
+                className="h-full flex items-center hover:text-ui-fg-base"
+                href="/store"
+                data-testid="nav-store-link-top"
+              >
+                Store
+              </LocalizedClientLink>
+            </div>
+            <div className="hidden small:flex h-full">
               <Suspense fallback={<span className="h-full flex items-center">Explore</span>}>
                 <MegaMenuServer />
               </Suspense>
