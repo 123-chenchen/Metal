@@ -28,27 +28,11 @@ export const MEGA_MENU_SECTIONS: MegaMenuSectionConfig[] = [
     ],
   },
   {
-    title: "Shop by Categories",
+    title: "Categories",
     entries: [
       { handle: "anime", type: "category" },
       { handle: "sports", type: "category" },
       { handle: "gaming", type: "category" },
     ],
-  },
-  {
-    title: "Popular Anime",
-    entries: [
-      { handle: "demon-slayer", type: "category" },
-      { handle: "dragon-ball", type: "category" },
-      { handle: "jujutsu-kaisen", type: "category" },
-      { handle: "one-piece", type: "category" },
-      { handle: "naruto", type: "category" },
-      { handle: "hunter-x-hunter", type: "category" },
-      
-    ],
-  },
-  {
-    title: "Popular Game",
-    entries: [{ handle: "pokemon", type: "category" }],
   },
 ]

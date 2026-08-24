@@ -222,7 +222,7 @@ const HexagonCustomTemplate = ({
   }
 
   return (
-    <main className="bg-white text-ui-fg-base">
+    <main className="bg-ui-bg-base text-ui-fg-base">
       <section
         className="content-container grid gap-10 py-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-start"
         data-testid="custom-hexagon-container"
@@ -304,7 +304,7 @@ const HexagonCustomTemplate = ({
             <p className="mt-1 text-sm leading-6 text-ui-fg-subtle">
               Each image becomes its own poster in your cart.
             </p>
-            <label className="mt-4 grid h-11 cursor-pointer place-items-center rounded-md border border-ui-border-base bg-white px-5 text-sm font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-bg-subtle">
+            <label className="mt-4 grid h-11 cursor-pointer place-items-center rounded-md border border-ui-border-base bg-ui-bg-subtle px-5 text-sm font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-bg-subtle-hover">
               Add image
               <input
                 type="file"

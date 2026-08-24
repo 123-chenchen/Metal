@@ -6,33 +6,51 @@ type ProductInfoProps = {
   product: HttpTypes.StoreProduct
 }
 
-const ProductInfo = ({ product }: ProductInfoProps) => {
+export const Breadcrumb = ({ product }: ProductInfoProps) => {
   return (
-    <div id="product-info">
-      <div className="flex flex-col gap-y-4 lg:max-w-[500px] mx-auto">
-        {product.collection && (
+    <nav
+      className="flex items-center gap-x-2 font-mono text-sm uppercase tracking-wide text-ui-fg-muted"
+      aria-label="Breadcrumb"
+    >
+      <LocalizedClientLink href="/" className="hover:text-ui-fg-interactive">
+        Home
+      </LocalizedClientLink>
+      <span>/</span>
+      {product.collection && (
+        <>
           <LocalizedClientLink
             href={`/collections/${product.collection.handle}`}
-            className="text-medium text-ui-fg-muted hover:text-ui-fg-subtle"
+            className="hover:text-ui-fg-interactive"
           >
             {product.collection.title}
           </LocalizedClientLink>
-        )}
-        <Heading
-          level="h2"
-          className="text-3xl leading-10 text-ui-fg-base"
-          data-testid="product-title"
-        >
-          {product.title}
-        </Heading>
+          <span>/</span>
+        </>
+      )}
+      <span className="text-ui-fg-interactive truncate">{product.title}</span>
+    </nav>
+  )
+}
 
+const ProductInfo = ({ product }: ProductInfoProps) => {
+  return (
+    <div id="product-info" className="flex flex-col gap-y-4">
+      <Heading
+        level="h2"
+        className="text-4xl small:text-5xl font-bold leading-[1.05] text-ui-fg-base"
+        data-testid="product-title"
+      >
+        {product.title}
+      </Heading>
+
+      {product.description && (
         <Text
-          className="text-medium text-ui-fg-subtle whitespace-pre-line"
+          className="text-base small:text-lg text-ui-fg-subtle whitespace-pre-line"
           data-testid="product-description"
         >
           {product.description}
         </Text>
-      </div>
+      )}
     </div>
   )
 }

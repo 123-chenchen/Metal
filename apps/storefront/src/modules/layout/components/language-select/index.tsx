@@ -113,7 +113,7 @@ const LanguageSelect = ({
   }
 
   return (
-    <div>
+    <div className="relative h-full">
       <Listbox
         as="span"
         onChange={handleChange}
@@ -126,13 +126,12 @@ const LanguageSelect = ({
         }
         disabled={isPending}
       >
-        <ListboxButton className="py-1 w-full">
-          <div className="txt-compact-small flex items-start gap-x-2">
+        <ListboxButton className="h-full flex items-center">
+          <div className="txt-compact-small flex items-center gap-x-2">
             <span>Language:</span>
             {current && (
               <span className="txt-compact-small flex items-center gap-x-2">
                 {current.countryCode && (
-                  /* @ts-ignore */
                   <ReactCountryFlag
                     svg
                     style={{
@@ -147,43 +146,40 @@ const LanguageSelect = ({
             )}
           </div>
         </ListboxButton>
-        <div className="flex relative w-full min-w-[320px]">
-          <Transition
-            show={state}
-            as={Fragment}
-            leave="transition ease-in duration-150"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+        <Transition
+          show={state}
+          as={Fragment}
+          leave="transition ease-in duration-150"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <ListboxOptions
+            className="absolute top-full right-0 mt-2 max-h-[442px] w-[280px] overflow-y-scroll z-[900] bg-metal-panel border border-metal-gold/15 drop-shadow-md text-small-regular uppercase text-metal-cream no-scrollbar rounded-rounded"
+            static
           >
-            <ListboxOptions
-              className="absolute -bottom-[calc(100%-36px)] left-0 xsmall:left-auto xsmall:right-0 max-h-[442px] overflow-y-scroll z-[900] bg-white drop-shadow-md text-small-regular uppercase text-black no-scrollbar rounded-rounded w-full"
-              static
-            >
-              {options.map((o) => (
-                <ListboxOption
-                  key={o.code || "default"}
-                  value={o}
-                  className="py-2 hover:bg-gray-200 px-3 cursor-pointer flex items-center gap-x-2"
-                >
-                  {o.countryCode ? (
-                    /* @ts-ignore */
-                    <ReactCountryFlag
-                      svg
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                      }}
-                      countryCode={o.countryCode}
-                    />
-                  ) : (
-                    <span style={{ width: "16px", height: "16px" }} />
-                  )}
-                  {o.localizedName}
-                </ListboxOption>
-              ))}
-            </ListboxOptions>
-          </Transition>
-        </div>
+            {options.map((o) => (
+              <ListboxOption
+                key={o.code || "default"}
+                value={o}
+                className="py-2 hover:bg-metal-panel-2 px-3 cursor-pointer flex items-center gap-x-2"
+              >
+                {o.countryCode ? (
+                  <ReactCountryFlag
+                    svg
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                    }}
+                    countryCode={o.countryCode}
+                  />
+                ) : (
+                  <span style={{ width: "16px", height: "16px" }} />
+                )}
+                {o.localizedName}
+              </ListboxOption>
+            ))}
+          </ListboxOptions>
+        </Transition>
       </Listbox>
     </div>
   )

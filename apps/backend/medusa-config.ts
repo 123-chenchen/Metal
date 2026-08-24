@@ -5,6 +5,31 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd())
 module.exports = defineConfig({
   admin: {
     maxUploadFileSize: 500 * 1024 * 1024, // 500MB
+    vite: (config) => {
+      const react = require("@vitejs/plugin-react").default
+      const nonReactPlugins = (config.plugins ?? [])
+        .flat(Infinity)
+        .filter((p: any) => !(p && typeof p.name === "string" && p.name.startsWith("vite:react")))
+
+      return {
+        ...config,
+        server: {
+          ...config.server,
+          allowedHosts: [".trycloudflare.com"],
+        },
+        plugins: [
+          ...nonReactPlugins,
+          // Fast Refresh injects duplicate preamble code for files under
+          // src/admin/widgets and src/admin/routes (upstream admin-vite-plugin
+          // bug), crashing the dev server on first load. Excluding them from
+          // Fast Refresh means a manual page reload is needed after editing
+          // those files, but keeps HMR working for the rest of the admin.
+          react({
+            exclude: [/[\\/]src[\\/]admin[\\/](widgets|routes)[\\/]/],
+          }),
+        ],
+      }
+    },
   },
 
   projectConfig: {
@@ -20,6 +45,9 @@ module.exports = defineConfig({
   },
 
   modules: [
+    {
+      resolve: "./src/modules/home-content",
+    },
     {
       resolve: "@medusajs/medusa/file",
       options: {

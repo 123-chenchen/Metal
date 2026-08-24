@@ -51,7 +51,7 @@ const MegaMenu = ({ sections, triggerLabel = "Explore" }: MegaMenuProps) => {
     >
       <button
         type="button"
-        className="h-full flex items-center hover:text-ui-fg-base"
+        className="h-full flex items-center hover:text-metal-gold transition-colors"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="true"
@@ -62,13 +62,13 @@ const MegaMenu = ({ sections, triggerLabel = "Explore" }: MegaMenuProps) => {
 
       {open && (
         <div
-          className="absolute top-full left-1/2 -translate-x-1/2 z-[60] w-screen max-w-3xl bg-white border border-ui-border-base shadow-lg rounded-rounded"
+          className="absolute top-full left-1/2 -translate-x-1/2 z-[60] w-screen max-w-3xl bg-metal-panel border border-metal-gold/15 shadow-lg rounded-rounded"
           data-testid="explore-menu-panel"
         >
           <div className="grid grid-cols-2 small:grid-cols-4 gap-x-8 gap-y-6 p-8">
             {sections.map((section) => (
               <div key={section.title}>
-                <span className="txt-compact-small-plus text-ui-fg-muted uppercase tracking-wide">
+                <span className="txt-compact-small-plus text-metal-gold font-mono-brand uppercase tracking-wide">
                   {section.title}
                 </span>
                 <ul className="flex flex-col gap-y-2 mt-3">
@@ -76,7 +76,7 @@ const MegaMenu = ({ sections, triggerLabel = "Explore" }: MegaMenuProps) => {
                     <li key={link.href}>
                       <LocalizedClientLink
                         href={link.href}
-                        className="txt-compact-small text-ui-fg-subtle hover:text-ui-fg-base"
+                        className="txt-compact-small text-metal-cream/70 hover:text-metal-gold transition-colors"
                         onClick={() => setOpen(false)}
                       >
                         {link.label}

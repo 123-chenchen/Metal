@@ -4,8 +4,9 @@ import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { SelectedImage } from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@modules/common/components/ui"
+import { Button, clx } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
+import Heart from "@modules/common/icons/heart"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
@@ -41,6 +42,8 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [isBuyingNow, setIsBuyingNow] = useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(false)
   const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
@@ -99,11 +102,8 @@ export default function ProductActions({
 
   const inView = useIntersection(actionsRef, "0px")
 
-  // add the selected variant to the cart
-  const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
-
-    setIsAdding(true)
+  const addSelectedVariantToCart = async () => {
+    if (!selectedVariant?.id) return false
 
     const image = selectedImage ?? {
       url: product.thumbnail ?? product.images?.[0]?.url ?? "",
@@ -122,7 +122,25 @@ export default function ProductActions({
       },
     })
 
+    return true
+  }
+
+  // add the selected variant to the cart
+  const handleAddToCart = async () => {
+    setIsAdding(true)
+    await addSelectedVariantToCart()
     setIsAdding(false)
+  }
+
+  // add the selected variant to the cart and jump straight to checkout
+  const handleBuyNow = async () => {
+    setIsBuyingNow(true)
+    const added = await addSelectedVariantToCart()
+    if (added) {
+      router.push(`/${countryCode}/checkout?step=address`)
+      return
+    }
+    setIsBuyingNow(false)
   }
 
   return (
@@ -152,24 +170,51 @@ export default function ProductActions({
 
         <ProductPrice product={product} variant={selectedVariant} />
 
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={
+              !selectedVariant || !!disabled || isAdding || !isValidVariant
+            }
+            className="flex-1 h-16 rounded-base border border-ui-fg-interactive text-lg font-bold text-ui-fg-interactive transition-colors hover:bg-ui-button-inverted hover:text-ui-fg-on-inverted disabled:pointer-events-none disabled:opacity-50"
+            data-testid="add-product-button"
+          >
+            {isAdding
+              ? "Adding..."
+              : !selectedVariant
+              ? "Select a size"
+              : "Add to cart"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsWishlisted((v) => !v)}
+            aria-pressed={isWishlisted}
+            aria-label={
+              isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+            }
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-base border border-ui-border-base transition-colors hover:border-ui-fg-interactive"
+          >
+            <Heart
+              size="22"
+              color={isWishlisted ? "#ff5b5b" : "currentColor"}
+              className={clx(!isWishlisted && "text-ui-fg-muted")}
+              {...(isWishlisted ? { fill: "#ff5b5b" } : {})}
+            />
+          </button>
+        </div>
+
         <Button
-          onClick={handleAddToCart}
+          onClick={handleBuyNow}
           disabled={
-            !selectedVariant ||
-            !!disabled ||
-            isAdding ||
-            !isValidVariant
+            !selectedVariant || !!disabled || isBuyingNow || !isValidVariant
           }
           variant="primary"
-          className="w-full h-10"
-          isLoading={isAdding}
-          data-testid="add-product-button"
+          className="w-full h-16 text-lg font-bold"
+          isLoading={isBuyingNow}
+          data-testid="buy-now-button"
         >
-          {!selectedVariant && !options
-            ? "Select variant"
-            : !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
+          Buy now
         </Button>
         <MobileActions
           product={product}

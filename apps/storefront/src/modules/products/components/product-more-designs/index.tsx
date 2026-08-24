@@ -18,7 +18,7 @@ export default function ProductMoreDesigns({
   return (
     <div className="product-page-constraint">
       <div className="flex flex-col items-center text-center mb-16">
-        <span className="text-base-regular text-gray-600 mb-6">
+        <span className="text-base-regular text-ui-fg-subtle mb-6">
           More designs
         </span>
         <p className="text-2xl-regular text-ui-fg-base max-w-lg">

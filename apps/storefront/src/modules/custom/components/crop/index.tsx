@@ -162,7 +162,7 @@ export const CustomCropModal = ({
 
   return (
     <div className="fixed inset-0 z-[90] grid place-items-center bg-black/40 px-4 py-6">
-      <div className="w-full max-w-[460px] rounded-[18px] border border-ui-border-base bg-white px-6 pb-6 pt-6 text-ui-fg-base shadow-2xl">
+      <div className="w-full max-w-[460px] rounded-[18px] border border-ui-border-base bg-ui-bg-subtle px-6 pb-6 pt-6 text-ui-fg-base shadow-2xl">
         <div className="relative mb-2 text-center">
           <h2 className="text-[22px] font-bold leading-7 text-ui-fg-base">
             Crop Your Image
@@ -274,7 +274,7 @@ export const CustomCropModal = ({
             type="button"
             onClick={onCancel}
             disabled={isUploading}
-            className="h-11 flex-1 rounded-xl border border-ui-border-base bg-white px-6 text-sm font-bold uppercase text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:opacity-50"
+            className="h-11 flex-1 rounded-xl border border-ui-border-base bg-ui-bg-subtle px-6 text-sm font-bold uppercase text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:opacity-50"
           >
             Cancel
           </button>

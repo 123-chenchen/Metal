@@ -2,9 +2,11 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { listCartOptions, retrieveCart } from "@lib/data/cart"
 import { SelectedImage } from "@lib/util/flatten-product-images"
 import ProductTemplate from "@modules/products/templates"
-import { HttpTypes } from "@medusajs/types"
+import { GalleryImage } from "@modules/products/components/image-gallery"
+import { HttpTypes, StoreCartShippingOption } from "@medusajs/types"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
@@ -70,52 +72,41 @@ function getImagesForVariant(
   return product.images?.filter((i) => imageIdsMap.has(i.id)) ?? null
 }
 
-// Reorders `images` so the design picked on the listing page (via the
-// `img` search param, 1-based index into the full `product.images`) is
-// first/prominent. Falls back to the first image when there's no valid
-// `img` param (e.g. a direct PDP visit) or the selected image isn't part
-// of the current variant-filtered set.
+// Builds the gallery's image list (in natural order, filtered to the
+// selected variant when it has its own images) plus which one is active —
+// picked via the `img` search param, a 1-based index into the full
+// `product.images` list (so the index stays stable across variant
+// filtering and matches the links used on listing-page design cards).
 function resolveSelectedImage(
   product: HttpTypes.StoreProduct,
   images: HttpTypes.StoreProductImage[] | null | undefined,
   imgParam: string | undefined
-): { images: HttpTypes.StoreProductImage[]; selectedImage: SelectedImage | null } {
-  const list = images ?? []
+): { images: GalleryImage[]; selectedImage: SelectedImage | null } {
+  const allImages = product.images ?? []
 
-  if (!list.length) {
-    return { images: list, selectedImage: null }
+  const galleryImages: GalleryImage[] = (images ?? []).map((image) => ({
+    id: image.id,
+    url: image.url ?? "",
+    index: allImages.findIndex((a) => a.id === image.id) + 1 || 1,
+  }))
+
+  if (!galleryImages.length) {
+    return { images: galleryImages, selectedImage: null }
   }
 
-  const allImages = product.images ?? []
   const requestedIndex = imgParam ? parseInt(imgParam, 10) : NaN
-  const requestedImage =
-    Number.isInteger(requestedIndex) && requestedIndex >= 1
-      ? allImages[requestedIndex - 1]
-      : undefined
+  const requested = Number.isInteger(requestedIndex)
+    ? galleryImages.find((image) => image.index === requestedIndex)
+    : undefined
 
-  const selectedIndexInList = requestedImage
-    ? list.findIndex((image) => image.id === requestedImage.id)
-    : -1
-
-  const reordered =
-    selectedIndexInList > 0
-      ? [
-          list[selectedIndexInList],
-          ...list.slice(0, selectedIndexInList),
-          ...list.slice(selectedIndexInList + 1),
-        ]
-      : list
-
-  const selected = reordered[0]
-  const selectedIndex =
-    allImages.findIndex((image) => image.id === selected.id) + 1 || 1
+  const selected = requested ?? galleryImages[0]
 
   return {
-    images: reordered,
+    images: galleryImages,
     selectedImage: {
-      url: selected.url ?? "",
-      index: selectedIndex,
-      designName: `${product.title} ${selectedIndex}`,
+      url: selected.url,
+      index: selected.index,
+      designName: `${product.title} ${selected.index}`,
     },
   }
 }
@@ -176,6 +167,14 @@ export default async function ProductPage(props: Props) {
     searchParams.img
   )
 
+  const cart = await retrieveCart()
+  let shippingOptions: StoreCartShippingOption[] = []
+
+  if (cart) {
+    const { shipping_options } = await listCartOptions()
+    shippingOptions = shipping_options
+  }
+
   return (
     <ProductTemplate
       product={pricedProduct}
@@ -183,6 +182,8 @@ export default async function ProductPage(props: Props) {
       countryCode={params.countryCode}
       images={images}
       selectedImage={selectedImage}
+      cart={cart}
+      shippingOptions={shippingOptions}
     />
   )
 }

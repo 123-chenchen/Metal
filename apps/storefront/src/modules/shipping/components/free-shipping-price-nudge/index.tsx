@@ -142,47 +142,43 @@ function FreeShippingInline({
   }
 }) {
   return (
-    <div className="bg-neutral-100 p-2 rounded-lg border">
-      <div className="space-y-1.5">
-        <div className="flex justify-between text-xs text-neutral-600">
+    <div className="rounded-base border border-ui-border-base overflow-hidden">
+      <div className="flex items-center gap-2 bg-ui-bg-subtle px-4 py-3 font-semibold text-base text-ui-fg-base">
+        🚚 Shipping
+      </div>
+      <div className="space-y-2 bg-ui-button-transparent-hover px-4 py-3">
+        <div className="flex justify-between text-sm">
           <div>
             {price.target_reached ? (
-              <div className="flex items-center gap-1.5">
-                {" "}
-                <CheckCircleSolid className="text-green-500 inline-block" />{" "}
+              <div className="flex items-center gap-1.5 text-ui-fg-base">
+                <CheckCircleSolid className="text-ui-tag-green-icon inline-block" />
                 Free Shipping unlocked!
               </div>
             ) : (
-              `Unlock Free Shipping`
+              <span className="font-medium text-ui-fg-base">
+                Buy{" "}
+                <b className="text-ui-fg-interactive">
+                  {convertToLocale({
+                    amount: price.target_remaining,
+                    currency_code: cart.currency_code,
+                  })}
+                </b>{" "}
+                more to enjoy FREE Shipping
+              </span>
             )}
-          </div>
-
-          <div
-            className={clx("visible", {
-              "opacity-0 invisible": price.target_reached,
-            })}
-          >
-            Only{" "}
-            <span className="text-neutral-950">
-              {convertToLocale({
-                amount: price.target_remaining,
-                currency_code: cart.currency_code,
-              })}
-            </span>{" "}
-            away
           </div>
         </div>
         <div className="flex justify-between gap-1">
           <div
             className={clx(
-              "bg-gradient-to-r from-zinc-400 to-zinc-500 h-1 rounded-full max-w-full duration-500 ease-in-out",
+              "h-1 max-w-full rounded-full bg-ui-fg-interactive duration-500 ease-in-out",
               {
-                "from-green-400 to-green-500": price.target_reached,
+                "bg-ui-tag-green-icon": price.target_reached,
               }
             )}
             style={{ width: `${price.remaining_percentage}%` }}
           ></div>
-          <div className="bg-neutral-300 h-1 rounded-full w-fit flex-grow"></div>
+          <div className="h-1 w-fit flex-grow rounded-full bg-ui-bg-base"></div>
         </div>
       </div>
     </div>

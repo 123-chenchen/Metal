@@ -33,6 +33,19 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
+        // AniMetal Poster brand theme — used by the site chrome (nav/footer/
+        // promo bar) and the home page's marketing sections. Namespaced so it
+        // never collides with the @medusajs/ui-preset tokens the rest of the
+        // app (store, PDP, cart, checkout) keeps using.
+        metal: {
+          black: "#0a0a0a",
+          panel: "#131311",
+          "panel-2": "#1c1b17",
+          gold: "#f4c430",
+          "gold-deep": "#c9971c",
+          cream: "#f3ece0",
+          gray: "#9a958a",
+        },
       },
       borderRadius: {
         none: "0px",
@@ -68,6 +81,12 @@ module.exports = {
           "Ubuntu",
           "sans-serif",
         ],
+        // AniMetal brand type system — scoped to the same chrome/home-page
+        // components as the `metal` color palette above.
+        display: ["var(--font-anton)", "Impact", "sans-serif"],
+        brand: ["var(--font-bebas-neue)", "Impact", "sans-serif"],
+        "body-brand": ["var(--font-sora)", "sans-serif"],
+        "mono-brand": ["var(--font-jetbrains-mono)", "monospace"],
       },
       keyframes: {
         ring: {

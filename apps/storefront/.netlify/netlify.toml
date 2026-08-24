@@ -1,0 +1,34 @@
+headers = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[[plugins]]
+origin = "config"
+package = "@netlify/plugin-nextjs"
+
+[plugins.inputs]
+
+[build]
+publish = "C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\apps\\storefront\\.next"
+publishOrigin = "config"
+commandOrigin = "config"
+base = "C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\apps\\storefront"
+command = "npm run build"
+
+[build.environment]
+NODE_VERSION = "20.19.0"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]

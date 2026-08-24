@@ -1,14 +1,16 @@
 import { Metadata } from "next"
 
-import FeaturedProducts from "@modules/home/components/featured-products"
+import FeaturedGrid from "@modules/home/components/featured-grid"
+import FeaturesBar from "@modules/home/components/features-bar"
 import Hero from "@modules/home/components/hero"
-import { listCollections } from "@lib/data/collections"
+import TrendingProducts from "@modules/home/components/trending-products"
+import { getHomeContent } from "@lib/data/home-content"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Medusa Next.js Starter Template",
+  title: "AniMetal Poster — Premium Metal Art for Anime Fans",
   description:
-    "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
+    "Waterproof, scratch-proof metal-printed posters for anime and gaming fans. Damage-free mounting, ultra-HD prints.",
 }
 
 export default async function Home(props: {
@@ -20,22 +22,18 @@ export default async function Home(props: {
 
   const region = await getRegion(countryCode)
 
-  const { collections } = await listCollections({
-    fields: "id, handle, title",
-  })
-
-  if (!collections || !region) {
+  if (!region) {
     return null
   }
 
+  const homeContent = await getHomeContent()
+
   return (
     <>
-      <Hero />
-      <div className="py-12">
-        <ul className="flex flex-col gap-x-6">
-          <FeaturedProducts collections={collections} region={region} />
-        </ul>
-      </div>
+      <Hero slides={homeContent?.hero_slides ?? []} />
+      <FeaturesBar />
+      <FeaturedGrid items={homeContent?.grid_items ?? []} />
+      <TrendingProducts region={region} />
     </>
   )
 }

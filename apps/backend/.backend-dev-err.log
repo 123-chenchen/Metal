@@ -1,0 +1,168 @@
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+[32m✔[39m Server is ready on port: 9000 – 5197ms
+{
+  message: [32m'SePay transaction lookup failed with status 401'[39m,
+  name: [32m'Error'[39m,
+  stack: [32m'Error: SePay transaction lookup failed with status 401\n'[39m +
+    [32m'    at findMatchingTransaction (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\apps\\backend\\src\\modules\\sepay\\sepay-client.ts:59:11)\n'[39m +
+    [32m'    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n'[39m +
+    [32m'    at async SepayProviderService.resolveConfirmation_ (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\apps\\backend\\src\\modules\\sepay\\service.ts:136:25)\n'[39m +
+    [32m'    at async SepayProviderService.authorizePayment (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\apps\\backend\\src\\modules\\sepay\\service.ts:104:30)\n'[39m +
+    [32m'    at async PaymentProviderService.authorizePayment (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\payment\\src\\services\\payment-provider.ts:112:12)\n'[39m +
+    [32m'    at async PaymentModuleService.authorizePaymentSession (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\payment\\src\\services\\payment-module.ts:565:28)\n'[39m +
+    [32m'    at async PaymentModuleService.descriptor.value (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\utils\\src\\modules-sdk\\decorators\\inject-into-context.ts:27:14)\n'[39m +
+    [32m'    at async PaymentModuleService.descriptor.value (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\utils\\src\\modules-sdk\\decorators\\emit-events.ts:26:22)\n'[39m +
+    [32m'    at async Object.exports.authorizePaymentSessionStep.async.container.container (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\core-flows\\src\\payment\\steps\\authorize-payment-session.ts:53:17)\n'[39m +
+    [32m'    at async invoke (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflows-sdk\\src\\utils\\composer\\helpers\\create-step-handler.ts:91:52)\n'[39m +
+    [32m'    at async Object.handle.invoke (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflows-sdk\\src\\utils\\composer\\create-step.ts:381:12)\n'[39m +
+    [32m'    at async DistributedTransaction.handler (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\orchestration\\src\\workflow\\workflow-manager.ts:214:16)\n'[39m +
+    [32m'    at async stepHandler (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\orchestration\\src\\transaction\\transaction-orchestrator.ts:1193:14)\n'[39m +
+    [32m'    at async Promise.allSettled (index 0)\n'[39m +
+    [32m'    at async promiseAll (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\utils\\src\\common\\promise-all.ts:27:18)\n'[39m +
+    [32m'    at async TransactionOrchestrator.executeNext (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\orchestration\\src\\transaction\\transaction-orchestrator.ts:1037:7)\n'[39m +
+    [32m'    at async executeNext (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\orchestration\\src\\transaction\\transaction-orchestrator.ts:1438:14)\n'[39m +
+    [32m'    at async TransactionOrchestrator.resume (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\orchestration\\src\\transaction\\transaction-orchestrator.ts:1453:5)\n'[39m +
+    [32m'    at async LocalWorkflow.run (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\orchestration\\src\\workflow\\local-workflow.ts:375:5)\n'[39m +
+    [32m'    at async originalExecution (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflows-sdk\\src\\helper\\workflow-export.ts:144:26)\n'[39m +
+    [32m'    at async newRun (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflows-sdk\\src\\helper\\workflow-export.ts:226:12)\n'[39m +
+    [32m'    at async Function.exportedWorkflow.run (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflows-sdk\\src\\helper\\workflow-export.ts:502:12)\n'[39m +
+    [32m'    at async WorkflowOrchestratorService.run (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflow-engine-inmemory\\src\\services\\workflow-orchestrator.ts:216:17)\n'[39m +
+    [32m'    at async WorkflowsModuleService.run (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\workflow-engine-inmemory\\src\\services\\workflows-module.ts:188:17)\n'[39m +
+    [32m'    at async POST (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\medusa\\src\\api\\store\\carts\\[id]\\complete\\route.ts:20:43)\n'[39m +
+    [32m'    at async POST (C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\framework\\src\\http\\utils\\wrap-handler.ts:27:14)\n'[39m +
+    [32m'⮑ sat C:\\Users\\ASUS\\OneDrive\\Documents\\metal\\node_modules\\@medusajs\\core-flows\\dist\\cart\\workflows\\complete-cart.js: [complete-cart -> authorize-payment-session-step (invoke)]'[39m,
+  __isMedusaError: [33mtrue[39m,
+  type: [32m'unexpected_state'[39m,
+  code: [90mundefined[39m,
+  date: [35m2026-08-21T16:32:55.685Z[39m
+}
+DriverException: Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?
+    at PostgreSqlExceptionConverter.convertException (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\core\platforms\ExceptionConverter.js:8:16)
+    at PostgreSqlExceptionConverter.convertException (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\postgresql\PostgreSqlExceptionConverter.js:48:22)
+    at PostgreSqlDriver.convertException (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\core\drivers\DatabaseDriver.js:360:54)
+    at C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\core\drivers\DatabaseDriver.js:364:24
+[90m    at runNextTicks (node:internal/process/task_queues:65:5)[39m
+[90m    at processTimers (node:internal/timers:520:9)[39m
+    at async PostgreSqlDriver.find (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\knex\AbstractSqlDriver.js:72:24)
+    at async SqlEntityManager.find (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\core\EntityManager.js:147:25)
+    at async MikroOrmAbstractBaseRepository_.find (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\dal\mikro-orm\mikro-orm-repository.ts:497:15)
+    at async AbstractService_.list (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\medusa-internal-service.ts:230:14)
+    at async UserModuleService.methodImplementation (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\medusa-service.ts:225:26)
+    at async UserModuleService.descriptor.value (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\decorators\inject-into-context.ts:27:14)
+    at async UserModuleService.descriptor.value (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\decorators\emit-events.ts:26:22)
+    at async ModuleDataFetcher.executeFetchRequest (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\query\module-data-fetcher.ts:289:16)
+    at async fetchData (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\joiner\execute.ts:301:20)
+    at async executePlan (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\joiner\execute.ts:70:20)
+    at async RemoteJoiner.query (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\joiner\remote-joiner.ts:93:59)
+    at async Query.internalQuery (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\query\query.ts:337:12)
+    at async Query.query (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\query\query.ts:139:12)
+    at async GET (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\medusa\src\api\admin\users\me\route.ts:29:18)
+    at async GET (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\framework\src\http\utils\wrap-handler.ts:27:14)
+
+    at Client_PG.acquireConnection (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4mknex[24m\lib\client.js:425:26)
+[90m    at runNextTicks (node:internal/process/task_queues:65:5)[39m
+[90m    at processTimers (node:internal/timers:520:9)[39m
+    at async Runner.ensureConnection (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4mknex[24m\lib\execution\runner.js:305:28)
+    at async Runner.run (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4mknex[24m\lib\execution\runner.js:30:19)
+    at async executeQuery.query (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\knex\AbstractSqlConnection.js:145:25)
+    at async PostgreSqlConnection.executeQuery (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\core\connections\Connection.js:103:25)
+    at async QueryBuilder.execute (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\knex\query\QueryBuilder.js:706:21)
+    at async PostgreSqlDriver.find (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\knex\AbstractSqlDriver.js:72:24)
+    at async SqlEntityManager.find (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@mikro-orm[24m\core\EntityManager.js:147:25)
+    at async MikroOrmAbstractBaseRepository_.find (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\dal\mikro-orm\mikro-orm-repository.ts:497:15)
+    at async AbstractService_.list (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\medusa-internal-service.ts:230:14)
+    at async UserModuleService.methodImplementation (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\medusa-service.ts:225:26)
+    at async UserModuleService.descriptor.value (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\decorators\inject-into-context.ts:27:14)
+    at async UserModuleService.descriptor.value (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\utils\src\modules-sdk\decorators\emit-events.ts:26:22)
+    at async ModuleDataFetcher.executeFetchRequest (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\query\module-data-fetcher.ts:289:16)
+    at async fetchData (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\joiner\execute.ts:301:20)
+    at async executePlan (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\joiner\execute.ts:70:20)
+    at async RemoteJoiner.query (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\joiner\remote-joiner.ts:93:59)
+    at async Query.internalQuery (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\query\query.ts:337:12)
+    at async Query.query (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\query\src\query\query.ts:139:12)
+    at async GET (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\medusa\src\api\admin\users\me\route.ts:29:18)
+    at async GET (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\framework\src\http\utils\wrap-handler.ts:27:14) {
+  code: [90mundefined[39m,
+  errno: [90mundefined[39m,
+  sqlState: [90mundefined[39m,
+  sqlMessage: [90mundefined[39m,
+  errmsg: [90mundefined[39m,
+  sql: [32m`select "u0"."id", "u0"."first_name", "u0"."last_name", "u0"."email", "u0"."avatar_url", "u0"."metadata", "u0"."created_at", "u0"."updated_at", "u0"."deleted_at" from "user" as "u0" where "u0"."deleted_at" is null and "u0"."id" in ('user_01M05VZVYBDV6AZC23DSC469MQ') order by "u0"."id" asc`[39m,
+  bindings: [90mundefined[39m
+}
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+[32m✔[39m Server is ready on port: 9000 – 7000ms
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+[32m✔[39m Server is ready on port: 9000 – 5533ms
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+[32m✔[39m Server is ready on port: 9000 – 5400ms
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+[32m✔[39m Server is ready on port: 9000 – 5152ms
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+[32m✔[39m Server is ready on port: 9000 – 5157ms
+- Creating server
+[sepay] Missing options: bankAccountNumber, bankCode, apiToken, webhookApiKey. The SePay payment provider will appear in the admin but checkout will fail until these are set.
+TypeError: object is not a function
+    at Object.<anonymous> [90m(C:\Users\ASUS\OneDrive\Documents\metal\apps\backend\[39msrc\workflows\sync-products-from-sheet.ts:365:34[90m)[39m
+    at createWorkflow (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4m@medusajs[24m\workflows-sdk\src\utils\composer\create-workflow.ts:170:33)
+    at Object.<anonymous> [90m(C:\Users\ASUS\OneDrive\Documents\metal\apps\backend\[39msrc\workflows\sync-products-from-sheet.ts:348:60[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1706:14)[39m
+    at Module.m._compile (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4mts-node[24m\src\index.ts:1618:23)
+[90m    at node:internal/modules/cjs/loader:1839:10[39m
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\ASUS\OneDrive\Documents\metal\node_modules\[4mts-node[24m\src\index.ts:1621:12)
+[90m    at Module.load (node:internal/modules/cjs/loader:1441:32)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1263:12)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:322:14)[39m
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+ERROR: The process "25472" not found.
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path C:\Users\ASUS\OneDrive\Documents\metal\apps\backend
+npm error workspace @dtc/backend@0.0.1
+npm error location C:\Users\ASUS\OneDrive\Documents\metal\apps\backend
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c medusa develop

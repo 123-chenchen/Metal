@@ -54,6 +54,10 @@
     @apply max-w-[1440px] w-full mx-auto px-6;
   }
 
+  .content-container-wide {
+    @apply max-w-[1920px] w-full mx-auto px-6;
+  }
+
   .contrast-btn {
     @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
   }
@@ -109,4 +113,53 @@
   .text-3xl-semi {
     @apply text-[32px] leading-[44px] font-semibold;
   }
+}
+
+/*
+ * AniMetal Poster brand theme — recolors @medusajs/ui-preset's CSS variables
+ * (used site-wide as `text-ui-fg-*` / `bg-ui-bg-*` / `border-ui-border-*`
+ * utility classes) for dark mode. Left deliberately unlayered so it wins over
+ * the preset's `@layer base` values regardless of Tailwind's internal layer
+ * order. Only the neutral chrome + interactive accent tokens are touched —
+ * semantic tag/danger/success colors keep the preset's own dark-mode values
+ * since they carry meaning (error stays red, etc).
+ */
+.dark {
+  --bg-base: #0a0a0a;
+  --bg-base-hover: #131311;
+  --bg-base-pressed: #1c1b17;
+  --bg-subtle: #131311;
+  --bg-subtle-hover: #1c1b17;
+  --bg-subtle-pressed: #232019;
+  --bg-component: #1c1b17;
+  --bg-component-hover: rgba(244, 196, 48, 0.08);
+  --bg-component-pressed: rgba(244, 196, 48, 0.12);
+  --bg-field: #131311;
+  --bg-field-hover: #1c1b17;
+  --bg-field-component: #131311;
+  --bg-field-component-hover: #1c1b17;
+  --bg-disabled: #1c1b17;
+  --bg-overlay: rgba(10, 10, 10, 0.72);
+  --bg-interactive: #f4c430;
+
+  --border-base: rgba(244, 196, 48, 0.15);
+  --border-strong: rgba(244, 196, 48, 0.3);
+  --border-interactive: #f4c430;
+
+  --fg-base: #f3ece0;
+  --fg-subtle: #9a958a;
+  --fg-muted: #7d786d;
+  --fg-disabled: #57534a;
+  --fg-interactive: #f4c430;
+  --fg-interactive-hover: #f9d666;
+  --fg-on-inverted: #0a0a0a;
+
+  --button-neutral: #1c1b17;
+  --button-neutral-hover: #232019;
+  --button-neutral-pressed: #2a271f;
+  --button-inverted: #f4c430;
+  --button-inverted-hover: #f9d666;
+  --button-inverted-pressed: #c9971c;
+  --button-transparent-hover: rgba(244, 196, 48, 0.08);
+  --button-transparent-pressed: rgba(244, 196, 48, 0.12);
 }

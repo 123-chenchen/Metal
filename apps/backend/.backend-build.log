@@ -1,0 +1,22 @@
+﻿
+> @dtc/backend@0.0.1 build
+> medusa build
+
+[32minfo[39m:    redisUrl not found. A fake redis instance will be used.
+[32minfo[39m:    Generating types...
+[32minfo[39m:    No link to load from C:\Users\ASUS\OneDrive\Documents\metal\node_modules\@medusajs\draft-order\.medusa\server\src\links. skipped.
+[32minfo[39m:    Types generated successfully
+[32minfo[39m:    Linting project...
+
+C:\Users\ASUS\OneDrive\Documents\metal\apps\backend\src\migration-scripts\initial-data-seed.ts
+  205:21  warning  `amount: 20000` looks like it's in the smallest currency unit. Medusa expects prices in major units (decimals)  @medusajs/prices-in-major-units
+  243:21  warning  `amount: 40000` looks like it's in the smallest currency unit. Medusa expects prices in major units (decimals)  @medusajs/prices-in-major-units
+
+✖ 2 problems (0 errors, 2 warnings)
+[33mwarn[39m:    Lint produced 2 warning(s).
+[32minfo[39m:    Starting build...
+[32minfo[39m:    Compiling backend source...
+[32minfo[39m:    Removing existing ".medusa\server" folder
+[32minfo[39m:    Compiling frontend source...
+[32minfo[39m:    Backend build completed successfully (7.44s)
+[32minfo[39m:    Frontend build completed successfully (22.93s)

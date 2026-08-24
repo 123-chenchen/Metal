@@ -531,17 +531,11 @@ const CustomWallTemplate = ({
                 layout before adding it to your cart.
               </p>
             </div>
-            <LocalizedClientLink
-              href="/store"
-              className="justify-self-start rounded-md border border-ui-border-base bg-white px-4 py-3 text-sm font-semibold text-ui-fg-base transition-colors hover:bg-ui-bg-subtle large:justify-self-end"
-            >
-              Back to store
-            </LocalizedClientLink>
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
-          <aside className="rounded-lg border border-ui-border-base bg-white p-4 shadow-sm">
+          <aside className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 shadow-sm">
             <div className="rounded-lg border border-dashed border-ui-border-interactive bg-ui-bg-subtle p-5 text-center">
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-ui-bg-base text-2xl font-semibold text-ui-fg-interactive">
                 +
@@ -553,7 +547,7 @@ const CustomWallTemplate = ({
                 className={clx(
                   "mx-auto mt-4 flex h-10 max-w-[220px] items-center justify-center rounded-full px-4 text-xs font-bold uppercase transition-colors",
                   {
-                    "cursor-pointer bg-black text-white hover:bg-gray-800":
+                    "cursor-pointer bg-ui-button-inverted text-ui-fg-on-inverted hover:bg-ui-button-inverted-hover":
                       Boolean(customProduct) && canAddMore,
                     "cursor-not-allowed bg-ui-bg-subtle text-ui-fg-disabled":
                       !customProduct || !canAddMore,
@@ -588,7 +582,7 @@ const CustomWallTemplate = ({
               <select
                 value={selectedCollectionId}
                 onChange={(event) => setSelectedCollectionId(event.target.value)}
-                className="h-10 min-w-[12rem] rounded-md border border-ui-border-base bg-white px-3 text-sm font-semibold text-ui-fg-base outline-none"
+                className="h-10 min-w-[12rem] rounded-md border border-ui-border-base bg-ui-bg-field px-3 text-sm font-semibold text-ui-fg-base outline-none"
               >
                 <option value="all">All collections</option>
                 {collections.map((collection) => (
@@ -602,9 +596,9 @@ const CustomWallTemplate = ({
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search products"
-                className="h-10 min-w-[12rem] flex-1 rounded-md border border-ui-border-base bg-white px-3 text-sm font-semibold text-ui-fg-base outline-none transition-colors placeholder:text-ui-fg-muted"
+                className="h-10 min-w-[12rem] flex-1 rounded-md border border-ui-border-base bg-ui-bg-field px-3 text-sm font-semibold text-ui-fg-base outline-none transition-colors placeholder:text-ui-fg-muted"
               />
-              <span className="rounded-full bg-black px-3 py-1 text-xs font-bold text-white">
+              <span className="rounded-full bg-ui-bg-component px-3 py-1 text-xs font-bold text-ui-fg-base">
                 {visibleProducts.length}
               </span>
             </div>
@@ -630,7 +624,7 @@ const CustomWallTemplate = ({
             </div>
           </aside>
 
-          <section className="rounded-lg border border-ui-border-base bg-white p-4 shadow-sm small:p-6">
+          <section className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 shadow-sm small:p-6">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ui-fg-subtle">
                 Honeycomb canvas
@@ -714,7 +708,7 @@ const CustomWallTemplate = ({
                   setWallItems([])
                 }}
                 disabled={!wallItems.length || isPending}
-                className="h-12 rounded-full border border-ui-border-base bg-white px-8 text-sm font-semibold text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:cursor-not-allowed disabled:opacity-45"
+                className="h-12 rounded-full border border-ui-border-base bg-ui-bg-subtle px-8 text-sm font-semibold text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:cursor-not-allowed disabled:opacity-45"
               >
                 Clear all
               </button>
@@ -873,7 +867,7 @@ const ProductPickerCard = ({
         type="button"
         onClick={onAdd}
         disabled={disabled}
-        className="mt-3 h-9 w-full rounded-md border border-ui-border-base text-xs font-bold uppercase text-ui-fg-base transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:text-ui-fg-disabled"
+        className="mt-3 h-9 w-full rounded-md border border-ui-border-base text-xs font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-button-inverted hover:text-ui-fg-on-inverted disabled:cursor-not-allowed disabled:text-ui-fg-disabled"
       >
         + Add
       </button>
