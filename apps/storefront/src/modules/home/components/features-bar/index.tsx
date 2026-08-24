@@ -57,7 +57,7 @@ const FeaturesBar = () => {
             index < FEATURES.length - 1 ? "small:border-r small:border-metal-gold/15" : ""
           }`}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-metal-gold/15 bg-metal-gold/10 text-metal-gold">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-metal-gold/15 bg-metal-gold/10 text-metal-gold">
             <svg
               viewBox="0 0 20 20"
               fill="none"

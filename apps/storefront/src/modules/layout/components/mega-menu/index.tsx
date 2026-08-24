@@ -6,7 +6,7 @@ import MegaMenu, { MegaMenuSection } from "./mega-menu"
 const categoryHref = (handle: string) => `/categories/${handle}`
 const collectionHref = (handle: string) => `/collections/${handle}`
 
-export default async function MegaMenuServer() {
+export async function getExploreMegaMenuSections(): Promise<MegaMenuSection[]> {
   const [categories, { collections }] = await Promise.all([
     listCategories(),
     listCollections(),
@@ -19,7 +19,7 @@ export default async function MegaMenuServer() {
     (collections ?? []).map((collection) => [collection.handle, collection])
   )
 
-  const sections: MegaMenuSection[] = MEGA_MENU_SECTIONS.map((section) => ({
+  return MEGA_MENU_SECTIONS.map((section) => ({
     title: section.title,
     links: section.entries
       .map((entry) => {
@@ -42,6 +42,10 @@ export default async function MegaMenuServer() {
       })
       .filter((link): link is { label: string; href: string } => !!link),
   })).filter((section) => section.links.length > 0)
+}
+
+export default async function MegaMenuServer() {
+  const sections = await getExploreMegaMenuSections()
 
   return <MegaMenu sections={sections} />
 }

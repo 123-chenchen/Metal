@@ -14,6 +14,7 @@ type PaginatedProductsParams = {
   category_id?: string[]
   id?: string[]
   order?: string
+  q?: string
 }
 
 export default async function PaginatedProducts({
@@ -24,6 +25,7 @@ export default async function PaginatedProducts({
   productsIds,
   countryCode,
   optionValueIds,
+  q,
 }: {
   sortBy?: SortOptions
   page: number
@@ -32,6 +34,7 @@ export default async function PaginatedProducts({
   productsIds?: string[]
   countryCode: string
   optionValueIds?: OptionValueIds
+  q?: string
 }) {
   const queryParams: PaginatedProductsParams = {
     limit: 12,
@@ -47,6 +50,10 @@ export default async function PaginatedProducts({
 
   if (productsIds) {
     queryParams["id"] = productsIds
+  }
+
+  if (q) {
+    queryParams["q"] = q
   }
 
   if (sortBy === "created_at") {
@@ -72,10 +79,14 @@ export default async function PaginatedProducts({
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
   const imageCards = flattenProductImages(products)
 
+  if (!imageCards.length) {
+    return <p className="text-ui-fg-subtle">No products found.</p>
+  }
+
   return (
     <>
       <ul
-        className="grid grid-cols-2 w-full small:grid-cols-4 medium:grid-cols-6 gap-x-3 gap-y-6"
+        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-5 gap-x-2 gap-y-4"
         data-testid="products-list"
       >
         {imageCards.map((card) => {

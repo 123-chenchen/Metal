@@ -10,11 +10,9 @@ const CROP_MAX_ZOOM = 4
 const CROP_HEX_TOP = 0
 const CROP_HEX_BOTTOM = 100
 const CROP_HEX_SIDE_X = ((CROP_FRAME_WIDTH - 340) / 2 / CROP_FRAME_WIDTH) * 100
-const cropHexPoints = `50,${CROP_HEX_TOP} ${
+const cropHexPoints = `50,${CROP_HEX_TOP} ${100 - CROP_HEX_SIDE_X},25 ${
   100 - CROP_HEX_SIDE_X
-},25 ${100 - CROP_HEX_SIDE_X},75 50,${CROP_HEX_BOTTOM} ${
-  CROP_HEX_SIDE_X
-},75 ${CROP_HEX_SIDE_X},25`
+},75 50,${CROP_HEX_BOTTOM} ${CROP_HEX_SIDE_X},75 ${CROP_HEX_SIDE_X},25`
 
 export type CropShape = "hexagon" | "rectangle"
 
@@ -48,7 +46,9 @@ export function getFrameCoverSize(
   }
 ) {
   const ratio =
-    typeof imageRatio === "number" && Number.isFinite(imageRatio) && imageRatio > 0
+    typeof imageRatio === "number" &&
+    Number.isFinite(imageRatio) &&
+    imageRatio > 0
       ? imageRatio
       : 1
   const frameRatio = frame.width / frame.height
@@ -177,7 +177,7 @@ export const CustomCropModal = ({
             type="button"
             onClick={onCancel}
             disabled={isUploading}
-            className="absolute right-0 top-0 grid h-8 w-8 place-items-center rounded-full border border-ui-border-base text-sm font-bold text-ui-fg-subtle transition-colors hover:text-ui-fg-base"
+            className="absolute right-0 top-0 grid h-8 w-8 place-items-center border border-ui-border-base text-sm font-bold text-ui-fg-subtle transition-colors hover:text-ui-fg-base"
             aria-label="Close crop"
           >
             x
@@ -274,7 +274,7 @@ export const CustomCropModal = ({
             type="button"
             onClick={onCancel}
             disabled={isUploading}
-            className="h-11 flex-1 rounded-xl border border-ui-border-base bg-ui-bg-subtle px-6 text-sm font-bold uppercase text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:opacity-50"
+            className="h-11 flex-1 border border-ui-border-base bg-ui-bg-subtle px-6 text-sm font-bold uppercase text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:opacity-50"
           >
             Cancel
           </button>
@@ -283,7 +283,7 @@ export const CustomCropModal = ({
             onClick={onConfirm}
             isLoading={isUploading}
             disabled={isUploading}
-            className="h-11 flex-1 rounded-xl px-7 text-sm font-bold uppercase"
+            className="h-11 flex-1 px-7 text-sm font-bold uppercase"
           >
             Confirm
           </Button>

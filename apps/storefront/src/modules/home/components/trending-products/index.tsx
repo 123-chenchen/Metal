@@ -10,9 +10,9 @@ const ProductCard = ({ product }: { product: HttpTypes.StoreProduct }) => {
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}`} className="group flex flex-col gap-3.5">
-      <div className="relative overflow-hidden rounded-lg border border-metal-gold/15 bg-metal-panel-2">
+      <div className="relative overflow-hidden bg-metal-panel-2">
         {onSale && (
-          <span className="absolute left-3 top-3 z-10 rounded-md border border-metal-gold/15 bg-metal-black/75 px-2.5 py-1 font-mono-brand text-[10.5px] font-bold uppercase tracking-wide text-metal-gold">
+          <span className="absolute left-3 top-3 z-10 bg-metal-black/75 px-2.5 py-1 font-mono-brand text-[10.5px] font-bold uppercase tracking-wide text-metal-gold">
             -{cheapestPrice?.percentage_diff}%
           </span>
         )}

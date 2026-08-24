@@ -2,6 +2,7 @@
 
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
+import { useWishlist } from "@lib/hooks/use-wishlist"
 import { SelectedImage } from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
 import { Button, clx } from "@modules/common/components/ui"
@@ -43,7 +44,11 @@ export default function ProductActions({
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
   const [isBuyingNow, setIsBuyingNow] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false)
+  const { isWishlisted: checkWishlisted, toggle: toggleWishlist } =
+    useWishlist()
+  const wishlistImageIndex = selectedImage?.index ?? 1
+  const isWishlisted = checkWishlisted(product.id, wishlistImageIndex)
   const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
@@ -188,12 +193,20 @@ export default function ProductActions({
           </button>
           <button
             type="button"
-            onClick={() => setIsWishlisted((v) => !v)}
+            onClick={async () => {
+              setIsTogglingWishlist(true)
+              try {
+                await toggleWishlist(product.id, wishlistImageIndex)
+              } finally {
+                setIsTogglingWishlist(false)
+              }
+            }}
+            disabled={isTogglingWishlist}
             aria-pressed={isWishlisted}
             aria-label={
               isWishlisted ? "Remove from wishlist" : "Add to wishlist"
             }
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-base border border-ui-border-base transition-colors hover:border-ui-fg-interactive"
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-base border border-ui-border-base transition-colors hover:border-ui-fg-interactive disabled:pointer-events-none disabled:opacity-50"
           >
             <Heart
               size="22"

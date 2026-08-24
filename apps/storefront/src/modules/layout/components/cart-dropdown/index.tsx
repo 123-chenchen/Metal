@@ -90,7 +90,7 @@ const CartDropdown = ({
           >
             <ShoppingBag size="20" />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2.5 w-4 h-4 rounded-full bg-metal-gold text-metal-black text-[10px] font-bold font-mono-brand flex items-center justify-center">
+              <span className="absolute -top-2 -right-2.5 w-4 h-4 bg-metal-gold text-metal-black text-[10px] font-bold font-mono-brand flex items-center justify-center">
                 {totalItems}
               </span>
             )}
@@ -233,7 +233,7 @@ const CartDropdown = ({
             ) : (
               <div>
                 <div className="flex py-16 flex-col gap-y-4 items-center justify-center">
-                  <div className="bg-ui-button-inverted text-small-regular flex items-center justify-center w-6 h-6 rounded-full text-ui-fg-on-inverted">
+                  <div className="bg-ui-button-inverted text-small-regular flex items-center justify-center w-6 h-6 text-ui-fg-on-inverted">
                     <span>0</span>
                   </div>
                   <span>Your shopping bag is empty.</span>

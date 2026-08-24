@@ -90,7 +90,7 @@ const Hero = ({ slides }: { slides: HomeHeroContent[] }) => {
             {href && (
               <LocalizedClientLink
                 href={href}
-                className="mt-1 inline-flex items-center gap-2.5 rounded-md bg-metal-gold px-8 py-4 font-mono-brand text-sm font-bold tracking-wide text-metal-black shadow-[0_10px_30px_rgba(244,196,48,0.3)] transition-transform hover:-translate-y-0.5"
+                className="mt-1 inline-flex items-center gap-2.5 bg-metal-gold px-8 py-4 font-mono-brand text-sm font-bold tracking-wide text-metal-black shadow-[0_10px_30px_rgba(244,196,48,0.3)] transition-transform hover:-translate-y-0.5"
               >
                 Shop Now
                 <svg
@@ -118,7 +118,7 @@ const Hero = ({ slides }: { slides: HomeHeroContent[] }) => {
               type="button"
               onClick={() => setActiveIndex(index)}
               aria-label={`Go to slide ${index + 1}`}
-              className={`h-1.5 rounded-full transition-all ${
+              className={`h-1.5 transition-all ${
                 index === activeIndex
                   ? "w-6 bg-metal-gold"
                   : "w-1.5 bg-metal-cream/40 hover:bg-metal-cream/70"

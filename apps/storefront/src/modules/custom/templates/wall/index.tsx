@@ -148,7 +148,7 @@ const CustomWallTemplate = ({
     [productOptions]
   )
   // hexagon-metal-posters is a real, visible product: it both backs the
-  // "upload your own image" tile below AND stays selectable as a normal
+  //"upload your own image"tile below AND stays selectable as a normal
   // catalog tile, so the picker list is not filtered.
   const shopProductOptions = productOptions
 
@@ -168,9 +168,9 @@ const CustomWallTemplate = ({
     }
 
     return collectionProducts.filter((product) => {
-      return normalizeSearch(`${product.title} ${product.handle ?? ""}`).includes(
-        query
-      )
+      return normalizeSearch(
+        `${product.title} ${product.handle ?? ""}`
+      ).includes(query)
     })
   }, [shopProductOptions, products, selectedCollectionId, searchQuery])
 
@@ -269,10 +269,7 @@ const CustomWallTemplate = ({
     setWallItems((current) => current.filter((item) => item.slot !== slot))
   }
 
-  const handleProductDragStart = (
-    event: DragEvent,
-    product: ProductOption
-  ) => {
+  const handleProductDragStart = (event: DragEvent, product: ProductOption) => {
     if (!product.variantId) {
       event.preventDefault()
       return
@@ -433,11 +430,7 @@ const CustomWallTemplate = ({
   }
 
   const confirmCustomUpload = async () => {
-    if (
-      !customDraft ||
-      !customProduct?.variantId ||
-      !canAddMore
-    ) {
+    if (!customDraft || !customProduct?.variantId || !canAddMore) {
       return
     }
 
@@ -527,17 +520,17 @@ const CustomWallTemplate = ({
                 Build your wall preview
               </h1>
               <p className="mt-4 max-w-[42rem] text-base leading-7 text-ui-fg-subtle">
-                Pick from your favorite posters to preview a hexagon wall
-                layout before adding it to your cart.
+                Pick from your favorite posters to preview a hexagon wall layout
+                before adding it to your cart.
               </p>
             </div>
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
-          <aside className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 shadow-sm">
-            <div className="rounded-lg border border-dashed border-ui-border-interactive bg-ui-bg-subtle p-5 text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-ui-bg-base text-2xl font-semibold text-ui-fg-interactive">
+          <aside className="border border-ui-border-base bg-ui-bg-subtle p-4 shadow-sm">
+            <div className="border border-dashed border-ui-border-interactive bg-ui-bg-subtle p-5 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center bg-ui-bg-base text-2xl font-semibold text-ui-fg-interactive">
                 +
               </div>
               <p className="mt-3 text-sm font-bold uppercase text-ui-fg-base">
@@ -545,7 +538,7 @@ const CustomWallTemplate = ({
               </p>
               <label
                 className={clx(
-                  "mx-auto mt-4 flex h-10 max-w-[220px] items-center justify-center rounded-full px-4 text-xs font-bold uppercase transition-colors",
+                  "mx-auto mt-4 flex h-10 max-w-[220px] items-center justify-center px-4 text-xs font-bold uppercase transition-colors",
                   {
                     "cursor-pointer bg-ui-button-inverted text-ui-fg-on-inverted hover:bg-ui-button-inverted-hover":
                       Boolean(customProduct) && canAddMore,
@@ -581,8 +574,10 @@ const CustomWallTemplate = ({
               </span>
               <select
                 value={selectedCollectionId}
-                onChange={(event) => setSelectedCollectionId(event.target.value)}
-                className="h-10 min-w-[12rem] rounded-md border border-ui-border-base bg-ui-bg-field px-3 text-sm font-semibold text-ui-fg-base outline-none"
+                onChange={(event) =>
+                  setSelectedCollectionId(event.target.value)
+                }
+                className="h-10 min-w-[12rem] border border-ui-border-base bg-ui-bg-field px-3 text-sm font-semibold text-ui-fg-base outline-none"
               >
                 <option value="all">All collections</option>
                 {collections.map((collection) => (
@@ -596,9 +591,9 @@ const CustomWallTemplate = ({
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search products"
-                className="h-10 min-w-[12rem] flex-1 rounded-md border border-ui-border-base bg-ui-bg-field px-3 text-sm font-semibold text-ui-fg-base outline-none transition-colors placeholder:text-ui-fg-muted"
+                className="h-10 min-w-[12rem] flex-1 border border-ui-border-base bg-ui-bg-field px-3 text-sm font-semibold text-ui-fg-base outline-none transition-colors placeholder:text-ui-fg-muted"
               />
-              <span className="rounded-full bg-ui-bg-component px-3 py-1 text-xs font-bold text-ui-fg-base">
+              <span className="bg-ui-bg-component px-3 py-1 text-xs font-bold text-ui-fg-base">
                 {visibleProducts.length}
               </span>
             </div>
@@ -617,14 +612,14 @@ const CustomWallTemplate = ({
                   />
                 ))
               ) : (
-                <div className="col-span-full rounded-md border border-dashed border-ui-border-base bg-ui-bg-subtle p-5 text-center text-sm font-semibold text-ui-fg-subtle">
+                <div className="col-span-full border border-dashed border-ui-border-base bg-ui-bg-subtle p-5 text-center text-sm font-semibold text-ui-fg-subtle">
                   No products found
                 </div>
               )}
             </div>
           </aside>
 
-          <section className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 shadow-sm small:p-6">
+          <section className="border border-ui-border-base bg-ui-bg-subtle p-4 shadow-sm small:p-6">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ui-fg-subtle">
                 Honeycomb canvas
@@ -708,7 +703,7 @@ const CustomWallTemplate = ({
                   setWallItems([])
                 }}
                 disabled={!wallItems.length || isPending}
-                className="h-12 rounded-full border border-ui-border-base bg-ui-bg-subtle px-8 text-sm font-semibold text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:cursor-not-allowed disabled:opacity-45"
+                className="h-12 border border-ui-border-base bg-ui-bg-subtle px-8 text-sm font-semibold text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:cursor-not-allowed disabled:opacity-45"
               >
                 Clear all
               </button>
@@ -717,7 +712,7 @@ const CustomWallTemplate = ({
                 onClick={addWallToCart}
                 disabled={!wallItems.length || isPending}
                 isLoading={isPending}
-                className="h-12 min-w-[320px] rounded-full px-8 text-sm font-bold uppercase disabled:opacity-45"
+                className="h-12 min-w-[320px] px-8 text-sm font-bold uppercase disabled:opacity-45"
               >
                 {successMessage ? "Added to cart" : "Add to cart"}
                 <span className="ml-4">
@@ -831,7 +826,7 @@ const ProductPickerCard = ({
   return (
     <article
       className={clx(
-        "rounded-lg border border-ui-border-base bg-ui-bg-subtle p-3 transition-colors",
+        "border border-ui-border-base bg-ui-bg-subtle p-3 transition-colors",
         {
           "cursor-grab hover:border-ui-border-interactive active:cursor-grabbing":
             !disabled,
@@ -867,7 +862,7 @@ const ProductPickerCard = ({
         type="button"
         onClick={onAdd}
         disabled={disabled}
-        className="mt-3 h-9 w-full rounded-md border border-ui-border-base text-xs font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-button-inverted hover:text-ui-fg-on-inverted disabled:cursor-not-allowed disabled:text-ui-fg-disabled"
+        className="mt-3 h-9 w-full border border-ui-border-base text-xs font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-button-inverted hover:text-ui-fg-on-inverted disabled:cursor-not-allowed disabled:text-ui-fg-disabled"
       >
         + Add
       </button>
@@ -1009,7 +1004,7 @@ const WallSlot = ({
               }}
               onDragStart={(event) => event.preventDefault()}
               draggable={false}
-              className="absolute right-3 top-4 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-xs font-bold text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
+              className="absolute right-3 top-4 grid h-6 w-6 place-items-center bg-black/70 text-xs font-bold text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
               aria-label={`Remove ${item.title}`}
             >
               x

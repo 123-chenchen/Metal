@@ -1,16 +1,17 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
+import { listCollections } from "@lib/data/collections"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
-import RefinementList from "@modules/store/components/refinement-list"
+import CollectionFilterBar from "@modules/store/components/collection-filter-bar"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 import { OptionValueIds } from "@lib/util/product-option-filters"
 
-export default function CategoryTemplate({
+export default async function CategoryTemplate({
   category,
   sortBy,
   page,
@@ -39,17 +40,17 @@ export default function CategoryTemplate({
 
   getParents(category)
 
+  const { collections } = await listCollections()
+
   return (
-    <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container-wide"
-      data-testid="category-container"
-    >
-      <RefinementList
+    <>
+      <CollectionFilterBar
         sortBy={sort}
+        collections={collections}
         data-testid="sort-by-container"
         hideOptionsPicker
       />
-      <div className="w-full">
+      <div className="py-6 content-container-wide" data-testid="category-container">
         <div className="flex flex-row mb-8 text-2xl-semi gap-4">
           {parents &&
             parents.map((parent) => (
@@ -100,6 +101,6 @@ export default function CategoryTemplate({
           />
         </Suspense>
       </div>
-    </div>
+    </>
   )
 }

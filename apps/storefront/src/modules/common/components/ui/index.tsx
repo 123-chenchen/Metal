@@ -86,7 +86,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={clsx(
-          "inline-flex gap-2 items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex gap-2 items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base disabled:pointer-events-none disabled:opacity-50",
           variant === "primary" &&
             "bg-ui-button-inverted text-ui-fg-on-inverted hover:bg-ui-button-inverted-hover",
           variant === "secondary" &&
@@ -115,7 +115,7 @@ export const Container = forwardRef<HTMLDivElement, ContainerProps>(
     return (
       <div
         ref={ref}
-        className={clsx("bg-ui-bg-subtle rounded-lg p-4", className)}
+        className={clsx("bg-ui-bg-subtle p-4", className)}
         {...props}
       >
         {children}
@@ -136,7 +136,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       <span
         ref={ref}
         className={clsx(
-          "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+          "inline-flex items-center px-2 py-1 text-xs font-medium",
           color === "green" && "bg-ui-tag-green-bg text-ui-tag-green-text",
           color === "red" && "bg-ui-tag-red-bg text-ui-tag-red-text",
           color === "blue" && "bg-ui-tag-blue-bg text-ui-tag-blue-text",
@@ -163,7 +163,7 @@ export const IconBadge = forwardRef<HTMLSpanElement, IconBadgeProps>(
       <span
         ref={ref}
         className={clsx(
-          "inline-flex items-center justify-center rounded-full bg-ui-bg-component text-ui-fg-base p-1",
+          "inline-flex items-center justify-center bg-ui-bg-component text-ui-fg-base p-1",
           className
         )}
         {...props}
@@ -184,7 +184,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       <button
         ref={ref}
         className={clsx(
-          "inline-flex items-center justify-center rounded-md p-2 text-ui-fg-base hover:bg-ui-button-transparent-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-interactive",
+          "inline-flex items-center justify-center p-2 text-ui-fg-base hover:bg-ui-button-transparent-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-interactive",
           className
         )}
         {...props}
@@ -227,7 +227,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={clsx(
-            "flex h-10 w-full rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base placeholder:text-ui-fg-muted focus:outline-none focus:ring-2 focus:ring-ui-border-interactive focus:ring-offset-2 focus:ring-offset-ui-bg-base disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-10 w-full border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base placeholder:text-ui-fg-muted focus:outline-none focus:ring-2 focus:ring-ui-border-interactive focus:ring-offset-2 focus:ring-offset-ui-bg-base disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
           {...props}
@@ -420,7 +420,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           type="checkbox"
           id={id}
           className={clsx(
-            "h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-ui-border-interactive",
+            "h-4 w-4 border-ui-border-base text-ui-fg-interactive focus:ring-ui-border-interactive",
             className
           )}
           {...props}

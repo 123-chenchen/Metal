@@ -11,7 +11,7 @@ const GridTile = ({ item }: { item: HomeGridItemContent }) => {
   return (
     <LocalizedClientLink
       href={linkHref(item)}
-      className="group relative block aspect-[4/5] w-full overflow-hidden rounded-lg border border-metal-gold/15 bg-metal-panel-2 transition-all duration-200 hover:-translate-y-1 hover:border-metal-gold/50"
+      className="group relative block aspect-[4/5] w-full overflow-hidden bg-metal-panel-2 transition-all duration-200 hover:-translate-y-1"
     >
       {item.media_type === "video" ? (
         <video

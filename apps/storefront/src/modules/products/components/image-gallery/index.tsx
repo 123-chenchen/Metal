@@ -32,7 +32,7 @@ const ZoomableImage = ({ image }: { image: GalleryImage }) => {
 
   return (
     <div
-      className="relative aspect-[4/5] w-full overflow-hidden rounded-base border border-ui-border-base bg-ui-bg-subtle shadow-elevation-card-hover"
+      className="relative aspect-[4/5] w-full overflow-hidden rounded-base bg-ui-bg-subtle shadow-elevation-card-hover"
       onMouseEnter={() => setZoomed(true)}
       onMouseLeave={() => setZoomed(false)}
       onMouseMove={handleMove}
@@ -49,7 +49,7 @@ const ZoomableImage = ({ image }: { image: GalleryImage }) => {
           transform: zoomed ? "scale(1.6)" : "scale(1)",
         }}
       />
-      <div className="pointer-events-none absolute bottom-3 right-3 rounded-base border border-ui-border-base bg-ui-bg-base/80 px-2.5 py-1 text-xs text-ui-fg-interactive">
+      <div className="pointer-events-none absolute bottom-3 right-3 rounded-base bg-ui-bg-base/80 px-2.5 py-1 text-xs text-ui-fg-interactive shadow-elevation-card-rest">
         ⤢ Zoom
       </div>
     </div>
@@ -81,10 +81,10 @@ const ImageGallery = ({ images, activeId, productHandle }: ImageGalleryProps) =>
               href={hrefForImage(image.index)}
               scroll={false}
               className={clx(
-                "relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base border bg-ui-bg-subtle transition-colors",
+                "relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base bg-ui-bg-subtle transition-all",
                 image.id === activeImage.id
-                  ? "border-ui-fg-interactive ring-1 ring-ui-fg-interactive"
-                  : "border-ui-border-base hover:border-ui-border-interactive"
+                  ? "ring-2 ring-ui-fg-interactive opacity-100"
+                  : "opacity-60 hover:opacity-100"
               )}
             >
               <Image

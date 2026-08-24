@@ -62,12 +62,12 @@ const MegaMenu = ({ sections, triggerLabel = "Explore" }: MegaMenuProps) => {
 
       {open && (
         <div
-          className="absolute top-full left-1/2 -translate-x-1/2 z-[60] w-screen max-w-3xl bg-metal-panel border border-metal-gold/15 shadow-lg rounded-rounded"
+          className="absolute top-full left-0 z-[60] w-max max-w-3xl bg-metal-panel border border-metal-gold/15 shadow-lg rounded-rounded"
           data-testid="explore-menu-panel"
         >
-          <div className="grid grid-cols-2 small:grid-cols-4 gap-x-8 gap-y-6 p-8">
+          <div className="flex flex-wrap gap-x-12 gap-y-6 p-8">
             {sections.map((section) => (
-              <div key={section.title}>
+              <div key={section.title} className="min-w-[160px]">
                 <span className="txt-compact-small-plus text-metal-gold font-mono-brand uppercase tracking-wide">
                   {section.title}
                 </span>

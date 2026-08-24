@@ -240,7 +240,7 @@ const HexagonCustomTemplate = ({
                   onSelect={() => setActiveImageId(image.id)}
                 />
               ))}
-              <label className="grid h-[78px] w-[64px] shrink-0 cursor-pointer place-items-center rounded-sm border border-dashed border-ui-border-base bg-ui-bg-subtle text-2xl text-ui-fg-muted transition-colors hover:text-ui-fg-base">
+              <label className="grid h-[78px] w-[64px] shrink-0 cursor-pointer place-items-center border border-dashed border-ui-border-base bg-ui-bg-subtle text-2xl text-ui-fg-muted transition-colors hover:text-ui-fg-base">
                 +
                 <input
                   type="file"
@@ -253,7 +253,7 @@ const HexagonCustomTemplate = ({
 
             <div className="order-1 grid place-items-center medium:order-2">
               <div
-                className="relative grid w-full place-items-center overflow-hidden rounded-lg bg-ui-bg-subtle"
+                className="relative grid w-full place-items-center overflow-hidden bg-ui-bg-subtle"
                 style={{ minHeight: 520 }}
               >
                 <div
@@ -270,7 +270,7 @@ const HexagonCustomTemplate = ({
                     <CroppedHexImage image={activeImage} />
                   ) : (
                     <div className="grid gap-3 px-10 text-center">
-                      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-ui-border-base text-2xl text-ui-fg-muted">
+                      <div className="mx-auto grid h-12 w-12 place-items-center border border-ui-border-base text-2xl text-ui-fg-muted">
                         +
                       </div>
                       <p className="text-sm font-semibold uppercase tracking-normal text-ui-fg-subtle">
@@ -295,7 +295,7 @@ const HexagonCustomTemplate = ({
             </p>
           </div>
 
-          <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4">
+          <div className="border border-ui-border-base bg-ui-bg-subtle p-4">
             <p className="text-sm font-bold text-ui-fg-base">
               {activeImage
                 ? `${itemCount} custom image${itemCount > 1 ? "s" : ""} added`
@@ -304,7 +304,7 @@ const HexagonCustomTemplate = ({
             <p className="mt-1 text-sm leading-6 text-ui-fg-subtle">
               Each image becomes its own poster in your cart.
             </p>
-            <label className="mt-4 grid h-11 cursor-pointer place-items-center rounded-md border border-ui-border-base bg-ui-bg-subtle px-5 text-sm font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-bg-subtle-hover">
+            <label className="mt-4 grid h-11 cursor-pointer place-items-center border border-ui-border-base bg-ui-bg-subtle px-5 text-sm font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-bg-subtle-hover">
               Add image
               <input
                 type="file"
@@ -315,21 +315,22 @@ const HexagonCustomTemplate = ({
             </label>
           </div>
 
-          {(product.options ?? []).length > 0 && (product.variants?.length ?? 0) > 1 && (
-            <div className="grid gap-4">
-              {(product.options ?? []).map((option) => (
-                <OptionSelect
-                  key={option.id}
-                  option={option}
-                  current={selectedOptions[option.id]}
-                  updateOption={setOptionValue}
-                  title={option.title ?? ""}
-                  disabled={isPending}
-                  data-testid="hexagon-option-select"
-                />
-              ))}
-            </div>
-          )}
+          {(product.options ?? []).length > 0 &&
+            (product.variants?.length ?? 0) > 1 && (
+              <div className="grid gap-4">
+                {(product.options ?? []).map((option) => (
+                  <OptionSelect
+                    key={option.id}
+                    option={option}
+                    current={selectedOptions[option.id]}
+                    updateOption={setOptionValue}
+                    title={option.title ?? ""}
+                    disabled={isPending}
+                    data-testid="hexagon-option-select"
+                  />
+                ))}
+              </div>
+            )}
 
           <div className="flex items-end gap-3">
             <ProductPrice product={product} variant={selectedVariant} />
@@ -338,7 +339,7 @@ const HexagonCustomTemplate = ({
 
           <div className="flex items-center gap-2 text-sm">
             <span
-              className={clx("h-2 w-2 rounded-full", {
+              className={clx("h-2 w-2", {
                 "bg-green-600": inStock,
                 "bg-red-600": !inStock,
               })}
@@ -349,15 +350,19 @@ const HexagonCustomTemplate = ({
           </div>
 
           <div className="grid gap-3">
-            <div className="flex h-11 items-center justify-between rounded-lg border border-ui-border-base bg-ui-bg-subtle px-4 text-sm">
-              <span className="font-medium text-ui-fg-subtle">Custom images</span>
+            <div className="flex h-11 items-center justify-between border border-ui-border-base bg-ui-bg-subtle px-4 text-sm">
+              <span className="font-medium text-ui-fg-subtle">
+                Custom images
+              </span>
               <span className="font-bold text-ui-fg-base">{itemCount}</span>
             </div>
             <Button
               onClick={addToCart}
-              disabled={!inStock || !selectedVariant || isPending || !images.length}
+              disabled={
+                !inStock || !selectedVariant || isPending || !images.length
+              }
               variant="primary"
-              className="h-12 w-full rounded-lg text-base font-bold"
+              className="h-12 w-full text-base font-bold"
               isLoading={isPending}
             >
               Add {itemCount || ""} to cart
@@ -372,12 +377,12 @@ const HexagonCustomTemplate = ({
           </LocalizedClientLink>
 
           {error && (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            <p className="border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
               {error}
             </p>
           )}
           {successMessage && (
-            <p className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+            <p className="border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
               {successMessage}
             </p>
           )}
@@ -429,12 +434,12 @@ const PreviewThumb = ({
       >
         <CroppedHexImage image={image} frameWidth={64} frameHeight={78} />
       </button>
-      <span className="pointer-events-none absolute -left-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-black text-[10px] font-bold text-white">
+      <span className="pointer-events-none absolute -left-1 -top-1 grid h-5 w-5 place-items-center bg-black text-[10px] font-bold text-white">
         {index}
       </span>
       <button
         type="button"
-        className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-white text-xs font-bold text-ui-fg-subtle opacity-0 shadow-sm ring-1 ring-ui-border-base transition-opacity hover:text-red-600 group-hover:opacity-100"
+        className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center bg-white text-xs font-bold text-ui-fg-subtle opacity-0 shadow-sm ring-1 ring-ui-border-base transition-opacity hover:text-red-600 group-hover:opacity-100"
         onClick={(event) => {
           event.stopPropagation()
           onRemove()

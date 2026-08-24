@@ -8,10 +8,15 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import ShoppingBag from "@modules/common/icons/shopping-bag"
 import UserCircle from "@modules/common/icons/user-circle"
 import CartButton from "@modules/layout/components/cart-button"
-import MegaMenuServer from "@modules/layout/components/mega-menu"
+import MegaMenuServer, {
+  getExploreMegaMenuSections,
+} from "@modules/layout/components/mega-menu"
 import MegaMenu from "@modules/layout/components/mega-menu/mega-menu"
+import MobileNav from "@modules/layout/components/mobile-nav"
 import NavSelectors from "@modules/layout/components/nav-selectors"
 import PromoBar from "@modules/layout/components/promo-bar"
+import SearchBar from "@modules/layout/components/search-bar"
+import WishlistButton from "@modules/layout/components/wishlist-button"
 
 const CUSTOM_MENU_SECTIONS = [
   {
@@ -25,11 +30,13 @@ const CUSTOM_MENU_SECTIONS = [
 ]
 
 export default async function Nav() {
-  const [regions, locales, currentLocale] = await Promise.all([
-    listRegions().then((regions: StoreRegion[]) => regions),
-    listLocales(),
-    getLocale(),
-  ])
+  const [regions, locales, currentLocale, exploreSections] =
+    await Promise.all([
+      listRegions().then((regions: StoreRegion[]) => regions),
+      listLocales(),
+      getLocale(),
+      getExploreMegaMenuSections(),
+    ])
 
   return (
     <>
@@ -38,9 +45,13 @@ export default async function Nav() {
         <header className="relative h-16 mx-auto border-b duration-200 bg-metal-black border-metal-gold/15">
           <nav className="content-container txt-xsmall-plus text-metal-cream/80 flex items-center justify-between w-full h-full text-small-regular">
             <div className="flex items-center gap-x-7 h-full">
+              <MobileNav
+                exploreSections={exploreSections}
+                customSections={CUSTOM_MENU_SECTIONS}
+              />
               <LocalizedClientLink
                 href="/"
-                className="flex flex-col leading-[0.85] gap-1"
+                className="hidden small:flex flex-col leading-[0.85] gap-1"
                 data-testid="nav-store-link"
               >
                 <span
@@ -57,7 +68,7 @@ export default async function Nav() {
                 </span>
               </LocalizedClientLink>
 
-              <div className="flex h-full">
+              <div className="hidden small:flex h-full">
                 <LocalizedClientLink
                   className="h-full flex items-center hover:text-metal-gold transition-colors"
                   href="/"
@@ -87,12 +98,21 @@ export default async function Nav() {
               </div>
             </div>
 
-            <div className="flex items-center gap-x-6 h-full">
-              <NavSelectors
-                regions={regions}
-                locales={locales}
-                currentLocale={currentLocale}
-              />
+            <div className="flex flex-1 items-center justify-center h-full px-2">
+              <SearchBar />
+            </div>
+
+            <div className="flex items-center gap-x-3 xsmall:gap-x-6 h-full">
+              <div className="hidden small:flex">
+                <NavSelectors
+                  regions={regions}
+                  locales={locales}
+                  currentLocale={currentLocale}
+                />
+              </div>
+              <div className="flex items-center h-full">
+                <WishlistButton />
+              </div>
               <div className="flex items-center h-full">
                 <LocalizedClientLink
                   className="hover:text-metal-gold transition-colors"
