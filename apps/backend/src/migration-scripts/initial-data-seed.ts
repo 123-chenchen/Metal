@@ -329,20 +329,28 @@ export default async function initial_data_seed({
   // handles — without them the section renders empty on a fresh database.
   logger.info("Seeding product collection data...");
 
-  await createCollectionsWorkflow(container).run({
+  const { result: collectionsResult } = await createCollectionsWorkflow(
+    container
+  ).run({
     input: {
       collections: [
         {
-          title: "POKE Framium - Square",
+          title: "Poke Framium Square",
           handle: "poke-framium-square",
         },
         {
-          title: "POKE Framium - Hexagon",
+          title: "Poke Framium Hexagonal",
           handle: "poke-framium-hexagonal",
         },
       ],
     },
   });
+  const squareCollection = collectionsResult.find(
+    (c) => c.handle === "poke-framium-square"
+  )!;
+  const hexagonalCollection = collectionsResult.find(
+    (c) => c.handle === "poke-framium-hexagonal"
+  )!;
   logger.info("Finished seeding product collection data.");
 
   // The Custom Standard/Hexagon poster pages (see modules/custom) resolve
@@ -442,4 +450,81 @@ export default async function initial_data_seed({
     },
   });
   logger.info("Finished seeding custom poster products.");
+
+  // These mirror the two catalog products already built and image-stocked
+  // in the shared dev database (uploaded to the R2 bucket configured in
+  // medusa-config.ts) so every engineer's local seed shows the same
+  // pre-made Pokemon design catalog instead of an empty collection.
+  logger.info("Seeding Poke Framium catalog products...");
+
+  const pokeHexagonalImages = [
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20L%C3%A1%C2%BB%C2%A5c%20gi%C3%83%C2%A1c%20-%20Pokemon%20-%20Flareon%20170_167-01M07ZP0HRGW2QF052DK2TXV03.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20L%C3%A1%C2%BB%C2%A5c%20gi%C3%83%C2%A1c%20-%20Pokemon%20-%20Oshawott%20105_086-01M07ZP0JANFVAQMZQR30DE777.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20L%C3%A1%C2%BB%C2%A5c%20gi%C3%83%C2%A1c%20-%20Pokemon%20-%20Rayquaza%20VMAX%20EVS%20218_203-01M07ZP0JPKV5M5WYM5NPWE29W.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20L%C3%A1%C2%BB%C2%A5c%20gi%C3%83%C2%A1c%20-%20Pokemon%20-%20Umbreon%20VMAX%20EVS%20095_203%20(2)-01M07ZP0K1YTFAF0HFAH33MMDK.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20L%C3%A1%C2%BB%C2%A5c%20gi%C3%83%C2%A1c%20-%20Pokemon%20-%20Zapdos%20%26%20Articuno%20%26%20Moltres%20GX%20SM210-01M07ZP0KEK76ZXRHQMW8C2Y7E.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20L%C3%A1%C2%BB%C2%A5c%20gi%C3%83%C2%A1c%20-%20Misty_s%20Pokemon%20-%20Misty_s%20Psyduck%2070%20HP-01M07ZP0KR2M5YMH6Q1ZHMFN86.png",
+  ]
+  const pokeSquareImages = [
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20KHUNG%20VU%C3%83%C2%94NG%20-%20Pokemon%20%20-%20Pikachu%2070%20HP-01M07ZVKBSR5FZPSZDW0RKSXE5.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20KHUNG%20VU%C3%83%C2%94NG%20-%20Pokemon%20-%20Evaluee%20ex%20200%20HP-01M07ZVKC2Z8T8QNMC16H667VK.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20KHUNG%20VU%C3%83%C2%94NG%20-%20Pokemon%20-%20Groudon%20130%20HP-01M07ZVKCE3GFBCRXB81225NHE.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20KHUNG%20VU%C3%83%C2%94NG%20-%20Pokemon%20-%20Pikachu%20%26%20Zekrom%20GX%20240%20HP%20(2)-01M07ZVKCNH414A76GM9H89C6E.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20KHUNG%20VU%C3%83%C2%94NG%20-%20Pokemon%20-%20Pikachu%20%26%20Zekrom%20GX%20240%20HP-01M07ZVKCTXH7KJVGASXF7DDHW.png",
+    "https://pub-5cd34cd23bb54fd2bb0b6656730440b7.r2.dev/productsPOKE%20Framium%20-%20KHUNG%20VU%C3%83%C2%94NG%20-%20Pokemon%20-%20Pikachu%2060%20HP-01M07ZVKD1H6F84CHQQZJ7MBRX.png",
+  ]
+
+  await createProductsWorkflow(container).run({
+    input: {
+      products: [
+        {
+          title: "Poke Framium Hexagonal",
+          handle: "poke-framium-hexagonal",
+          description: "Pre-designed Pokemon hexagon metal poster.",
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          collection_id: hexagonalCollection.id,
+          thumbnail: pokeHexagonalImages[0],
+          images: pokeHexagonalImages.map((url) => ({ url })),
+          options: [{ title: "Poke Hex", values: ["18*15.6*9"] }],
+          variants: [
+            {
+              title: "18*15.6*9",
+              options: { "Poke Hex": "18*15.6*9" },
+              prices: [{ amount: 250000, currency_code: "vnd" }],
+            },
+          ],
+          sales_channels: [
+            {
+              id: defaultSalesChannel.id,
+            },
+          ],
+        },
+        {
+          title: "Poke Framium Square",
+          handle: "poke-framium-square",
+          description: "Pre-designed Pokemon square metal poster.",
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          collection_id: squareCollection.id,
+          thumbnail: pokeSquareImages[0],
+          images: pokeSquareImages.map((url) => ({ url })),
+          options: [{ title: "Poke Square", values: ["20x20"] }],
+          variants: [
+            {
+              title: "20x20",
+              options: { "Poke Square": "20x20" },
+              prices: [{ amount: 350000, currency_code: "vnd" }],
+            },
+          ],
+          sales_channels: [
+            {
+              id: defaultSalesChannel.id,
+            },
+          ],
+        },
+      ],
+    },
+  });
+  logger.info("Finished seeding Poke Framium catalog products.");
 }
