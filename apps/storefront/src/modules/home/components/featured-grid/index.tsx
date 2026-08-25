@@ -31,16 +31,16 @@ const GridTile = ({ item }: { item: HomeGridItemContent }) => {
           className="object-cover object-center"
         />
       )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent p-6">
+      <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/90 via-black/35 to-transparent p-6 text-center">
         <span className="font-mono-brand text-[11px] uppercase tracking-wide text-metal-gold">
           {item.link_type === "collection" ? "Collection" : "Category"}
         </span>
         {item.title && (
-          <h3 className="font-display text-2xl tracking-wide text-metal-cream">
+          <h3 className="font-display text-3xl tracking-wide text-metal-cream small:text-4xl">
             {item.title}
           </h3>
         )}
-        <div className="mt-2.5 flex items-center gap-2 font-mono-brand text-xs text-metal-cream/85">
+        <div className="mt-2.5 flex items-center justify-center gap-2 font-mono-brand text-xs text-metal-cream/85">
           Shop the drop
           <svg
             viewBox="0 0 20 20"
