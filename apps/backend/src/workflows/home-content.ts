@@ -198,3 +198,30 @@ export const deleteFeaturedGridItemWorkflow = createWorkflow(
     return new WorkflowResponse(deleteFeaturedGridItemStep(input))
   }
 )
+
+export type UpsertPromoBarInput = {
+  text: string
+  is_active: boolean
+}
+
+const upsertPromoBarStep = createStep(
+  "upsert-promo-bar",
+  async (input: UpsertPromoBarInput, { container }) => {
+    const service = container.resolve<HomeContentModuleService>(HOME_CONTENT_MODULE)
+    // Singleton: there's only ever one promo bar row.
+    const [existing] = await service.listPromoBars({}, { take: 1 })
+
+    const promoBar = existing
+      ? await service.updatePromoBars({ id: existing.id, ...input })
+      : await service.createPromoBars(input)
+
+    return new StepResponse(promoBar)
+  }
+)
+
+export const upsertPromoBarWorkflow = createWorkflow(
+  "upsert-promo-bar",
+  (input: UpsertPromoBarInput) => {
+    return new WorkflowResponse(upsertPromoBarStep(input))
+  }
+)

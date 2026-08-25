@@ -7,7 +7,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
     HOME_CONTENT_MODULE
   )
 
-  const [heroBanners, gridItems] = await Promise.all([
+  const [heroBanners, gridItems, promoBars] = await Promise.all([
     homeContentModuleService.listHeroBanners(
       {},
       { order: { position: "ASC" } }
@@ -16,10 +16,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
       {},
       { order: { position: "ASC" } }
     ),
+    homeContentModuleService.listPromoBars({}, { take: 1 }),
   ])
 
   res.status(200).json({
     hero_slides: heroBanners,
     grid_items: gridItems,
+    promo_bar: promoBars[0] ?? null,
   })
 }

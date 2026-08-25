@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Photo } from "@medusajs/icons"
-import { Button, Container, Heading, Input, Label, Select, Text, toast } from "@medusajs/ui"
+import { Button, Container, Heading, Input, Label, Select, Switch, Text, toast } from "@medusajs/ui"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { sdk } from "../../lib/sdk"
 
@@ -30,9 +30,16 @@ type FeaturedGridItem = {
   title: string | null
 }
 
+type PromoBar = {
+  id: string
+  text: string
+  is_active: boolean
+}
+
 type HomeContentResponse = {
   hero_slides: HeroBanner[]
   grid_items: FeaturedGridItem[]
+  promo_bar: PromoBar | null
 }
 
 type PickerOption = { value: string; label: string }
@@ -476,6 +483,67 @@ const GridItemSection = ({
   )
 }
 
+const PromoBarSection = ({ promoBar }: { promoBar: PromoBar | null }) => {
+  const queryClient = useQueryClient()
+  const [text, setText] = useState(promoBar?.text ?? "")
+  const [isActive, setIsActive] = useState(promoBar?.is_active ?? true)
+
+  useEffect(() => {
+    setText(promoBar?.text ?? "")
+    setIsActive(promoBar?.is_active ?? true)
+  }, [promoBar])
+
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      sdk.client.fetch("/admin/home-content/promo-bar", {
+        method: "POST",
+        body: { text, is_active: isActive },
+      }),
+    onSuccess: () => {
+      toast.success("Đã lưu thanh khuyến mãi")
+      queryClient.invalidateQueries({ queryKey: HOME_CONTENT_QUERY_KEY })
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : "Lưu thất bại")
+    },
+  })
+
+  return (
+    <Container className="flex flex-col gap-y-4">
+      <div className="flex flex-col gap-y-1">
+        <Heading level="h2">Thanh khuyến mãi</Heading>
+        <Text size="small" className="text-ui-fg-subtle">
+          Dòng chữ chạy ngang trên cùng mọi trang của storefront. Để trống hoặc tắt để hiển thị
+          mặc định.
+        </Text>
+      </div>
+      <div className="flex flex-col gap-y-1">
+        <Label size="small">Tiêu đề</Label>
+        <Input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Redefine Your Space — Buy 3+, Get 40% Off"
+        />
+      </div>
+      <div className="flex items-center gap-x-2">
+        <Switch checked={isActive} onCheckedChange={setIsActive} id="promo-bar-active" />
+        <Label size="small" htmlFor="promo-bar-active">
+          Hiển thị trên storefront
+        </Label>
+      </div>
+      <div>
+        <Button
+          onClick={() => saveMutation.mutate()}
+          isLoading={saveMutation.isPending}
+          disabled={!text.trim()}
+        >
+          Lưu thanh khuyến mãi
+        </Button>
+      </div>
+    </Container>
+  )
+}
+
 const HomeContentPage = () => {
   const { data, isLoading } = useHomeContent()
   const collectionOptions = useCollectionOptions()
@@ -501,6 +569,7 @@ const HomeContentPage = () => {
           Quản lý hero banner và 3 ô nổi bật hiển thị trên trang chủ storefront.
         </Text>
       </div>
+      <PromoBarSection promoBar={data?.promo_bar ?? null} />
       <div className="flex flex-col gap-y-1">
         <Heading level="h2">Hero banner (slideshow)</Heading>
         <Text size="small" className="text-ui-fg-subtle">

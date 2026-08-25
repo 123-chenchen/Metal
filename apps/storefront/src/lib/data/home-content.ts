@@ -22,9 +22,14 @@ export type HomeGridItemContent = {
   title: string | null
 }
 
+export type HomePromoBarContent = {
+  text: string
+}
+
 export type HomeContentResponse = {
   hero_slides: HomeHeroContent[]
   grid_items: HomeGridItemContent[]
+  promo_bar: HomePromoBarContent | null
 }
 
 export const getHomeContent = async (): Promise<HomeContentResponse | null> => {
