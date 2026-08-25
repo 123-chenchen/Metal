@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
+import { ChevronLeft, ChevronRight } from "@medusajs/icons"
 import { HomeHeroContent } from "@lib/data/home-content"
 
 const AUTOPLAY_MS = 6000
@@ -40,6 +41,11 @@ const Hero = ({ slides }: { slides: HomeHeroContent[] }) => {
 
     return () => clearInterval(timer)
   }, [slides.length])
+
+  const goToPrevious = () =>
+    setActiveIndex((current) => (current - 1 + slides.length) % slides.length)
+  const goToNext = () =>
+    setActiveIndex((current) => (current + 1) % slides.length)
 
   const slide = hasSlides ? slides[Math.min(activeIndex, slides.length - 1)] : null
   const kicker = slide?.kicker?.trim() || FALLBACK_KICKER
@@ -109,6 +115,27 @@ const Hero = ({ slides }: { slides: HomeHeroContent[] }) => {
           </div>
         </div>
       </div>
+
+      {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={goToPrevious}
+            aria-label="Previous slide"
+            className="absolute left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-metal-cream/20 bg-metal-black/30 text-metal-cream backdrop-blur-sm transition-colors hover:border-metal-gold hover:bg-metal-gold hover:text-metal-black small:left-8"
+          >
+            <ChevronLeft />
+          </button>
+          <button
+            type="button"
+            onClick={goToNext}
+            aria-label="Next slide"
+            className="absolute right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-metal-cream/20 bg-metal-black/30 text-metal-cream backdrop-blur-sm transition-colors hover:border-metal-gold hover:bg-metal-gold hover:text-metal-black small:right-8"
+          >
+            <ChevronRight />
+          </button>
+        </>
+      )}
 
       {slides.length > 1 && (
         <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
