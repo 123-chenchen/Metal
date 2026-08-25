@@ -56,8 +56,13 @@ export const listProducts = async ({
     ...(await getAuthHeaders()),
   }
 
+  // Short revalidate window (rather than the indefinite force-cache used
+  // elsewhere) so editing a product in the admin - e.g. removing an image -
+  // shows up here without needing a storefront restart or manual cache
+  // purge. Mirrors the fix already applied in ./payment.ts.
   const next = {
     ...(await getCacheOptions("products")),
+    revalidate: 60,
   }
 
   return sdk.client
