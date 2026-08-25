@@ -7,6 +7,7 @@ import {
 } from "@medusajs/framework/utils";
 import {
   createApiKeysWorkflow,
+  createCollectionsWorkflow,
   createProductCategoriesWorkflow,
   createProductOptionsWorkflow,
   createProductsWorkflow,
@@ -100,7 +101,12 @@ export default async function initial_data_seed({
           name: "Vietnam",
           currency_code: "vnd",
           countries,
-          payment_providers: ["pp_system_default"],
+          // "pp_sepay_sepay" is Medusa's derived id for the sepay module
+          // provider (config id "sepay" + AbstractPaymentProvider identifier
+          // "sepay") registered in medusa-config.ts. Without it in a
+          // region's payment_providers, the storefront's SePay QR checkout
+          // option (see lib/constants.tsx paymentInfoMap) never appears.
+          payment_providers: ["pp_system_default", "pp_sepay_sepay"],
         },
       ],
     },
@@ -317,6 +323,27 @@ export default async function initial_data_seed({
     },
   });
   logger.info("Finished seeding product category data.");
+
+  // The Explore mega menu's "Collections" section (see
+  // modules/layout/components/mega-menu/config.ts) hardcodes these two
+  // handles — without them the section renders empty on a fresh database.
+  logger.info("Seeding product collection data...");
+
+  await createCollectionsWorkflow(container).run({
+    input: {
+      collections: [
+        {
+          title: "POKE Framium - Square",
+          handle: "poke-framium-square",
+        },
+        {
+          title: "POKE Framium - Hexagon",
+          handle: "poke-framium-hexagonal",
+        },
+      ],
+    },
+  });
+  logger.info("Finished seeding product collection data.");
 
   // The Custom Standard/Hexagon poster pages (see modules/custom) resolve
   // their backing product by these exact handles — without them, those
