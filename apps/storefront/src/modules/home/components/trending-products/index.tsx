@@ -25,7 +25,7 @@ const ProductCard = ({ product }: { product: HttpTypes.StoreProduct }) => {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <h4 className="text-sm font-semibold leading-snug text-metal-cream">
+        <h4 className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-metal-cream">
           {product.title}
         </h4>
         {cheapestPrice && (
@@ -65,9 +65,6 @@ const TrendingProducts = async ({ region }: { region: HttpTypes.StoreRegion }) =
     <div className="content-container bg-metal-black pb-16 small:pb-24">
       <div className="mb-9 flex items-end justify-between">
         <div>
-          <span className="font-mono-brand text-xs font-bold uppercase tracking-wide text-metal-gold">
-            Fresh drops
-          </span>
           <h2 className="mt-2.5 font-display text-3xl tracking-wide text-metal-cream">
             Trending Now
           </h2>
