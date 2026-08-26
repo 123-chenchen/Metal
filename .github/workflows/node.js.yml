@@ -1,31 +1,73 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: node-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Use repository npm version
+        run: npm install --global npm@10.9.3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run ci:test
+        env:
+          NODE_ENV: test
+
+      - name: Validate storefront build variables
+        shell: bash
+        env:
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.NEXT_PUBLIC_MEDUSA_BACKEND_URL }}
+          NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}
+        run: |
+          if [[ -z "$NEXT_PUBLIC_MEDUSA_BACKEND_URL" ]]; then
+            echo "::error::Missing repository variable NEXT_PUBLIC_MEDUSA_BACKEND_URL"
+            exit 1
+          fi
+
+          if [[ -z "$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY" ]]; then
+            echo "::error::Missing repository variable NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY"
+            exit 1
+          fi
+
+      - name: Build backend and storefront
+        run: npm run ci:build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/medusa_ci
+          REDIS_URL: redis://localhost:6379
+          STORE_CORS: http://localhost:8000
+          ADMIN_CORS: http://localhost:9000
+          AUTH_CORS: http://localhost:8000,http://localhost:9000
+          JWT_SECRET: ci-build-only-jwt-secret
+          COOKIE_SECRET: ci-build-only-cookie-secret
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.NEXT_PUBLIC_MEDUSA_BACKEND_URL }}
+          NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_DEFAULT_REGION: ${{ vars.NEXT_PUBLIC_DEFAULT_REGION || 'vn' }}
+          NEXT_PUBLIC_BASE_URL: http://localhost:8000

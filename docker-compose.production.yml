@@ -1,0 +1,107 @@
+name: metal-production
+
+x-backend-service: &backend-service
+  image: metal-backend:${IMAGE_TAG:-latest}
+  build:
+    context: .
+    dockerfile: apps/backend/Dockerfile
+  env_file:
+    - ${BACKEND_ENV_FILE:-./deploy/env/backend.env}
+  networks:
+    - metal-internal
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - metal-internal
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - metal-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  backend-migrate:
+    <<: *backend-service
+    restart: "no"
+    command: ["npm", "run", "predeploy"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  backend:
+    <<: *backend-service
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:9000:9000"
+    depends_on:
+      backend-migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 30s
+
+  storefront:
+    image: metal-storefront:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: apps/storefront/Dockerfile
+      args:
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL}
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL}
+        NEXT_PUBLIC_STRIPE_KEY: ${NEXT_PUBLIC_STRIPE_KEY:-}
+        NEXT_PUBLIC_MEDIA_URL: ${NEXT_PUBLIC_MEDIA_URL:-}
+        NEXT_PUBLIC_MEDUSA_PAYMENTS_ACCOUNT_ID: ${NEXT_PUBLIC_MEDUSA_PAYMENTS_ACCOUNT_ID:-}
+        NEXT_PUBLIC_MEDUSA_PAYMENTS_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PAYMENTS_PUBLISHABLE_KEY:-}
+        MEDUSA_CLOUD_S3_HOSTNAME: ${MEDUSA_CLOUD_S3_HOSTNAME:-}
+        MEDUSA_CLOUD_S3_PATHNAME: ${MEDUSA_CLOUD_S3_PATHNAME:-}
+    env_file:
+      - ${STOREFRONT_ENV_FILE:-./deploy/env/storefront.env}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - metal-internal
+    depends_on:
+      backend:
+        condition: service_healthy
+    stop_grace_period: 30s
+
+networks:
+  metal-internal:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:

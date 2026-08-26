@@ -1,9 +1,12 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import {
+  AuthenticatedMedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 import WishlistModuleService from "../../../modules/wishlist/service"
 import { WISHLIST_MODULE } from "../../../modules/wishlist"
 
-function getOwner(req: MedusaRequest) {
+function getOwner(req: AuthenticatedMedusaRequest) {
   const customerId = req.auth_context?.actor_id || null
   const guestId =
     typeof req.query.guest_id === "string" ? req.query.guest_id : null
@@ -12,7 +15,7 @@ function getOwner(req: MedusaRequest) {
 }
 
 export async function GET(
-  req: MedusaRequest,
+  req: AuthenticatedMedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
   const wishlistModuleService: WishlistModuleService = req.scope.resolve(
@@ -81,7 +84,7 @@ export async function GET(
 }
 
 export async function POST(
-  req: MedusaRequest<{
+  req: AuthenticatedMedusaRequest<{
     product_id?: unknown
     image_index?: unknown
     guest_id?: unknown

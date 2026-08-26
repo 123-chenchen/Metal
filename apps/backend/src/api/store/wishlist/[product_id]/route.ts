@@ -1,10 +1,13 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import {
+  AuthenticatedMedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
 import WishlistModuleService from "../../../../modules/wishlist/service"
 import { WISHLIST_MODULE } from "../../../../modules/wishlist"
 
 export async function DELETE(
-  req: MedusaRequest,
+  req: AuthenticatedMedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
   const wishlistModuleService: WishlistModuleService = req.scope.resolve(

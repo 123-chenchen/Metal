@@ -39,6 +39,10 @@ yarn-error.log*
 **/.env.test.local
 **/.env.production.local
 
+# Production deployment secrets
+deploy/env/*.env
+!deploy/env/*.env.example
+
 # Turbo
 .turbo
 .vscode

@@ -4,12 +4,21 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
 module.exports = defineConfig({
   admin: {
+    disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
     maxUploadFileSize: 500 * 1024 * 1024, // 500MB
     vite: (config) => {
       const react = require("@vitejs/plugin-react").default
-      const nonReactPlugins = (config.plugins ?? [])
+      const plugins = (config.plugins ?? []) as any[]
+      const nonReactPlugins = plugins
         .flat(Infinity)
-        .filter((p: any) => !(p && typeof p.name === "string" && p.name.startsWith("vite:react")))
+        .filter(
+          (plugin: any) =>
+            !(
+              plugin &&
+              typeof plugin.name === "string" &&
+              plugin.name.startsWith("vite:react")
+            )
+        )
 
       return {
         ...config,
@@ -34,6 +43,11 @@ module.exports = defineConfig({
 
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    redisUrl: process.env.REDIS_URL,
+    workerMode: (process.env.MEDUSA_WORKER_MODE || "shared") as
+      | "shared"
+      | "worker"
+      | "server",
 
     http: {
       storeCors: process.env.STORE_CORS!,
