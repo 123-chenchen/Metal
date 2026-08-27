@@ -10,7 +10,9 @@ cp deploy/env/storefront.env.example deploy/env/storefront.env
 ```
 
 Replace every `CHANGE_ME` value. The real `.env` files are ignored by both Git
-and Docker.
+and Docker. The bundled PostgreSQL connection uses `sslmode=disable` because
+traffic stays inside the private Docker network and that container does not
+serve TLS.
 
 Generate different values for `JWT_SECRET` and `COOKIE_SECRET`:
 
