@@ -38,6 +38,15 @@ RUN NODE_ENV=production \
     COOKIE_SECRET=build-only-cookie-secret \
     npm run build --workspace=@dtc/backend
 
+# Medusa Admin is React 18. Fail the image build if the React 19 runtime from
+# the storefront workspace is ever bundled into it, which would crash Admin
+# with React error #31 in the browser.
+RUN if grep -R -q "react.transitional.element" \
+      apps/backend/.medusa/server/public/admin/assets; then \
+      echo "React 19 was bundled into the Medusa Admin build" >&2; \
+      exit 1; \
+    fi
+
 
 FROM node:20-bookworm-slim AS runner
 

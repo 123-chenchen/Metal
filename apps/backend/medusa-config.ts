@@ -7,6 +7,7 @@ module.exports = defineConfig({
     disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
     maxUploadFileSize: 500 * 1024 * 1024, // 500MB
     vite: (config) => {
+      const path = require("path")
       const react = require("@vitejs/plugin-react").default
       const plugins = (config.plugins ?? []) as any[]
       const nonReactPlugins = plugins
@@ -19,9 +20,37 @@ module.exports = defineConfig({
               plugin.name.startsWith("vite:react")
             )
         )
+      const aliases = Array.isArray(config.resolve?.alias)
+        ? config.resolve.alias
+        : Object.entries(config.resolve?.alias ?? {}).map(
+            ([find, replacement]) => ({ find, replacement })
+          )
+
+      // The backend Admin uses React 18 while the storefront workspace uses
+      // React 19. On Linux, Vite can otherwise resolve both workspace copies
+      // into the same Admin bundle, causing React error #31 at runtime.
+      const reactRoot = path.dirname(require.resolve("react/package.json"))
+      const reactDomRoot = path.dirname(
+        require.resolve("react-dom/package.json")
+      )
 
       return {
         ...config,
+        resolve: {
+          ...config.resolve,
+          alias: [
+            { find: "react-dom", replacement: reactDomRoot },
+            { find: "react", replacement: reactRoot },
+            ...aliases,
+          ],
+          dedupe: Array.from(
+            new Set([
+              ...(config.resolve?.dedupe ?? []),
+              "react",
+              "react-dom",
+            ])
+          ),
+        },
         server: {
           ...config.server,
           allowedHosts: [".trycloudflare.com"],
