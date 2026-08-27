@@ -20,7 +20,7 @@ import WishlistButton from "@modules/layout/components/wishlist-button"
 
 const CUSTOM_MENU_SECTIONS = [
   {
-    title: "Custom",
+    title: "Custom Posters",
     links: [
       { label: "Custom Standard Poster", href: "/custom/standard" },
       { label: "Custom Hexagon Poster", href: "/custom/hexagon" },

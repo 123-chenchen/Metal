@@ -1,165 +1,125 @@
-import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { clx } from "@modules/common/components/ui"
-
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Mail from "@modules/common/icons/mail"
+import MapPin from "@modules/common/icons/map-pin"
+import Phone from "@modules/common/icons/phone"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 
-export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
+import PaymentBadges from "./payment-badges"
+import SocialLinks from "./social-links"
 
+const SUPPORT_LINKS = [
+  { label: "FAQ", href: "/faq" },
+  { label: "Contact Us", href: "/contact" },
+  { label: "How to Install Your Metal Art", href: "/how-to-install-metal-art" },
+]
+
+const BLOG_LINKS = [
+  {
+    label: "Size Guide: Find Your Perfect Fit",
+    href: "/blog/size-guide-find-your-perfect-fit",
+  },
+  {
+    label: "Animetal: The Future of Anime Art",
+    href: "/blog/animetal-the-future-of-anime-art",
+  },
+]
+
+const SERVICE_LINKS = [
+  { label: "Shipping Policy", href: "/shipping-policy" },
+  { label: "Refund Policy", href: "/refund-policy" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Copyright Notice", href: "/copyright-notice" },
+  { label: "Terms of Service", href: "/terms-of-service" },
+  { label: "Payment Policy", href: "/payment-policy" },
+]
+
+const FooterLinkGroup = ({
+  title,
+  links,
+}: {
+  title: string
+  links: { label: string; href: string }[]
+}) => (
+  <div className="flex flex-col gap-y-4">
+    <span className="txt-small-plus font-mono-brand text-metal-cream uppercase tracking-wide">
+      {title}
+    </span>
+    <ul className="flex flex-col gap-y-3">
+      {links.map((link) => (
+        <li key={link.href}>
+          <LocalizedClientLink
+            href={link.href}
+            className="text-metal-gray txt-small hover:text-metal-gold transition-colors"
+          >
+            {link.label}
+          </LocalizedClientLink>
+        </li>
+      ))}
+    </ul>
+  </div>
+)
+
+export default function Footer() {
   return (
     <footer className="border-t border-metal-gold/15 bg-metal-panel w-full">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-10 xsmall:flex-row items-start justify-between py-16">
-          <div className="flex flex-col gap-y-3 max-w-[260px]">
-            <LocalizedClientLink
-              href="/"
-              className="flex flex-col leading-[0.85] gap-1"
-            >
-              <span
-                className="font-display text-xl text-metal-cream tracking-wide"
-                style={{
-                  textShadow:
-                    "0 0 14px rgba(244,196,48,0.55), 0 0 2px rgba(244,196,48,0.8)",
-                }}
-              >
-                HexMetal
+        <div className="grid grid-cols-2 xsmall:grid-cols-3 medium:grid-cols-5 gap-x-8 gap-y-10 py-16">
+          <FooterLinkGroup title="Help & Support" links={SUPPORT_LINKS} />
+          <FooterLinkGroup title="Blog" links={BLOG_LINKS} />
+          <FooterLinkGroup title="Service" links={SERVICE_LINKS} />
+          <div className="flex flex-col gap-y-8 col-span-2 xsmall:col-span-1">
+            <div className="flex flex-col gap-y-4">
+              <span className="txt-small-plus font-mono-brand text-metal-cream uppercase tracking-wide">
+                Get in touch
               </span>
-              <span className="font-brand text-metal-gold text-xs tracking-[0.5em] pl-px">
-                POSTER
-              </span>
-            </LocalizedClientLink>
-            <p className="text-metal-gray txt-small leading-relaxed">
-              Premium metal-printed art for anime and gaming fans — waterproof,
-              scratch-proof, and mounted in seconds.
-            </p>
-          </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
-            {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus font-mono-brand text-metal-gold uppercase tracking-wide">
-                  Categories
-                </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
-                >
-                  {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
-                    }
-
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
-
-                    return (
-                      <li
-                        className="flex flex-col gap-2 text-metal-gray txt-small"
-                        key={c.id}
-                      >
-                        <LocalizedClientLink
-                          className={clx(
-                            "hover:text-metal-gold transition-colors",
-                            children && "txt-small-plus"
-                          )}
-                          href={`/categories/${c.handle}`}
-                          data-testid="category-link"
-                        >
-                          {c.name}
-                        </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-metal-gold transition-colors"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus font-mono-brand text-metal-gold uppercase tracking-wide">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-metal-gray txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
-                >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-metal-gold transition-colors"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus font-mono-brand text-metal-gold uppercase tracking-wide">
-                Medusa
-              </span>
-              <ul className="grid grid-cols-1 gap-y-2 text-metal-gray txt-small">
-                <li>
-                  <a
-                    href="https://github.com/medusajs"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-metal-gold transition-colors"
-                  >
-                    GitHub
-                  </a>
+              <ul className="flex flex-col gap-y-3 text-metal-gray txt-small">
+                <li className="flex items-start gap-2">
+                  <Phone size={16} className="mt-0.5 shrink-0 text-metal-gold" />
+                  <span>
+                    WhatsApp:{" "}
+                    <a
+                      href="https://wa.me/13043951355"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-metal-gold transition-colors"
+                    >
+                      +1 (304) 395-1355
+                    </a>
+                  </span>
                 </li>
-                <li>
-                  <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-metal-gold transition-colors"
-                  >
-                    Documentation
-                  </a>
+                <li className="flex items-start gap-2">
+                  <Mail size={16} className="mt-0.5 shrink-0 text-metal-gold" />
+                  <span>
+                    Email us:{" "}
+                    <a
+                      href="mailto:support@animetalposter.com"
+                      className="hover:text-metal-gold transition-colors"
+                    >
+                      support@animetalposter.com
+                    </a>
+                  </span>
                 </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/dtc-starter"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-metal-gold transition-colors"
-                  >
-                    Source code
-                  </a>
+                <li className="flex items-start gap-2">
+                  <MapPin
+                    size={16}
+                    className="mt-0.5 shrink-0 text-metal-gold"
+                  />
+                  <span>971 US Highway 202N, Suite N1, Branchburg, NJ 08876</span>
                 </li>
               </ul>
             </div>
+            <div className="flex flex-col gap-y-4">
+              <span className="txt-small-plus font-mono-brand text-metal-cream uppercase tracking-wide">
+                Follow us
+              </span>
+              <SocialLinks />
+            </div>
+          </div>
+          <div className="flex flex-col gap-y-4">
+            <span className="txt-small-plus font-mono-brand text-metal-cream uppercase tracking-wide">
+              We accept
+            </span>
+            <PaymentBadges />
           </div>
         </div>
         <div className="flex w-full pb-10 pt-6 border-t border-metal-gold/15 justify-between items-center text-metal-gray font-mono-brand">

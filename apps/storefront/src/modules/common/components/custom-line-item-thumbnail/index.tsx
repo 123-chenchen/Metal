@@ -3,7 +3,7 @@
 import { HttpTypes } from "@medusajs/types"
 
 type CustomLineItemThumbnailProps = {
-  item: HttpTypes.StoreCartLineItem
+  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
 }
 
 const HEX_CLIP_PATH =
@@ -20,6 +20,10 @@ type CustomCrop = {
   imageRatio?: number | null
 }
 
+// Shared by cart, order confirmation, order details, and the account orders
+// list - anywhere a custom-designed line item's actual photo (not the
+// generic carrier product's stock thumbnail) needs to be shown, cropped and
+// shaped exactly as the customer picked it.
 const CustomLineItemThumbnail = ({ item }: CustomLineItemThumbnailProps) => {
   const imageUrl = getCustomImageUrl(item)
 
@@ -55,19 +59,25 @@ const CustomLineItemThumbnail = ({ item }: CustomLineItemThumbnailProps) => {
   )
 }
 
-function getCustomImageUrl(item: HttpTypes.StoreCartLineItem) {
+function getCustomImageUrl(
+  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
+) {
   const value = item.metadata?.custom_image_url
 
   return typeof value === "string" && value ? value : null
 }
 
-function getCustomType(item: HttpTypes.StoreCartLineItem) {
+function getCustomType(
+  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
+) {
   const value = item.metadata?.custom_type
 
   return typeof value === "string" ? value : null
 }
 
-function getCustomCrop(item: HttpTypes.StoreCartLineItem): CustomCrop {
+function getCustomCrop(
+  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
+): CustomCrop {
   const value = item.metadata?.custom_crop
 
   if (!value || typeof value !== "object" || Array.isArray(value)) {

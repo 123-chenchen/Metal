@@ -3,7 +3,6 @@ import { Metadata } from "next"
 import FeaturedGrid from "@modules/home/components/featured-grid"
 import FeaturesBar from "@modules/home/components/features-bar"
 import Hero from "@modules/home/components/hero"
-import TrendingProducts from "@modules/home/components/trending-products"
 import { getHomeContent } from "@lib/data/home-content"
 import { getRegion } from "@lib/data/regions"
 
@@ -33,7 +32,6 @@ export default async function Home(props: {
       <Hero slides={homeContent?.hero_slides ?? []} />
       <FeaturesBar />
       <FeaturedGrid items={homeContent?.grid_items ?? []} />
-      <TrendingProducts region={region} />
     </>
   )
 }

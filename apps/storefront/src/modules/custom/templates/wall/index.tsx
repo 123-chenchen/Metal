@@ -28,6 +28,11 @@ import {
 } from "react"
 
 const DRAG_MIME = "application/x-custom-wall-item"
+// Mirrors the backend's own cap (apps/backend/src/api/store/custom/uploads/route.ts)
+// so oversized files are rejected here instead of tripping the JSON body-size
+// limit server-side, whose error response the browser can't surface (no CORS
+// headers on that path), leaving the upload looking stuck forever.
+const MAX_CUSTOM_IMAGE_BYTES = 8 * 1024 * 1024
 const WALL_ROWS = [11, 10, 11, 10, 11]
 const WALL_SLOT_WIDTH = 86
 const WALL_SLOT_HEIGHT = 100
@@ -61,7 +66,14 @@ type WallItem = {
   variantId: string
   title: string
   source: "product" | "custom"
+  // For "custom" items: a local blob preview until the item is actually
+  // added to cart, then the real cloud URL once uploaded.
   imageUrl?: string | null
+  // Set only once this custom item has actually been uploaded to cloud
+  // storage, which happens lazily at "Add to cart" time so previewing a
+  // wall layout never writes to storage.
+  remoteUrl?: string
+  file?: File
   originalFilename?: string | null
   price?: number | null
   crop?: CustomCrop
@@ -135,7 +147,6 @@ const CustomWallTemplate = ({
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [customDraft, setCustomDraft] = useState<CustomUploadDraft | null>(null)
-  const [isUploadingCustom, setIsUploadingCustom] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const productOptions = useMemo(
@@ -266,7 +277,13 @@ const CustomWallTemplate = ({
 
   const removeWallItem = (slot: number) => {
     setSuccessMessage(null)
-    setWallItems((current) => current.filter((item) => item.slot !== slot))
+    setWallItems((current) => {
+      const target = current.find((item) => item.slot === slot)
+      if (target?.source === "custom" && target.imageUrl) {
+        URL.revokeObjectURL(target.imageUrl)
+      }
+      return current.filter((item) => item.slot !== slot)
+    })
   }
 
   const handleProductDragStart = (event: DragEvent, product: ProductOption) => {
@@ -398,6 +415,11 @@ const CustomWallTemplate = ({
       return
     }
 
+    if (file.size > MAX_CUSTOM_IMAGE_BYTES) {
+      setError("Image must be 8 MB or smaller")
+      return
+    }
+
     setError(null)
     setSuccessMessage(null)
     setCustomDraft({
@@ -429,40 +451,35 @@ const CustomWallTemplate = ({
     )
   }
 
-  const confirmCustomUpload = async () => {
+  // No network call here on purpose: placing/previewing a design on the wall
+  // must never write to cloud storage. The file only gets uploaded lazily in
+  // addWallToCart, once the customer actually commits the wall to their cart.
+  const confirmCustomUpload = () => {
     if (!customDraft || !customProduct?.variantId || !canAddMore) {
       return
     }
 
     setError(null)
     setSuccessMessage(null)
-    setIsUploadingCustom(true)
 
-    try {
-      const payload = await uploadCustomImage(customDraft.file)
-
-      const slot = getNextSlot(wallItems.map((item) => item.slot))
-      setLastAnimatedSlot(slot)
-      setWallItems((current) => [
-        ...current,
-        {
-          slot,
-          productId: customProduct.id,
-          variantId: customProduct.variantId!,
-          title: customProduct.title,
-          source: "custom",
-          imageUrl: payload.url,
-          originalFilename: payload.filename ?? customDraft.file.name,
-          price: customProduct.price,
-          crop: customDraft.crop,
-        },
-      ])
-      closeCustomCrop()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not upload custom image")
-    } finally {
-      setIsUploadingCustom(false)
-    }
+    const slot = getNextSlot(wallItems.map((item) => item.slot))
+    setLastAnimatedSlot(slot)
+    setWallItems((current) => [
+      ...current,
+      {
+        slot,
+        productId: customProduct.id,
+        variantId: customProduct.variantId!,
+        title: customProduct.title,
+        source: "custom",
+        imageUrl: customDraft.previewUrl,
+        file: customDraft.file,
+        originalFilename: customDraft.file.name,
+        price: customProduct.price,
+        crop: customDraft.crop,
+      },
+    ])
+    setCustomDraft(null)
   }
 
   const addWallToCart = () => {
@@ -474,9 +491,25 @@ const CustomWallTemplate = ({
     setSuccessMessage(null)
     startTransition(async () => {
       try {
+        const uploadedItems = await Promise.all(
+          wallItems.map(async (item) => {
+            if (item.source !== "custom" || item.remoteUrl || !item.file) {
+              return item
+            }
+
+            const payload = await uploadCustomImage(item.file)
+            return {
+              ...item,
+              remoteUrl: payload.url,
+              originalFilename: payload.filename ?? item.originalFilename,
+            }
+          })
+        )
+        setWallItems(uploadedItems)
+
         await addItemsToCartAction({
           countryCode,
-          items: wallItems.map((item) => {
+          items: uploadedItems.map((item) => {
             if (item.source === "product") {
               return {
                 source: "product",
@@ -489,7 +522,7 @@ const CustomWallTemplate = ({
               source: "custom_wall",
               variantId: item.variantId,
               quantity: 1,
-              imageUrl: item.imageUrl,
+              imageUrl: item.remoteUrl,
               originalFilename: item.originalFilename,
               wallSlot: item.slot,
               crop: item.crop,
@@ -700,7 +733,14 @@ const CustomWallTemplate = ({
                 type="button"
                 onClick={() => {
                   setSuccessMessage(null)
-                  setWallItems([])
+                  setWallItems((current) => {
+                    for (const item of current) {
+                      if (item.source === "custom" && item.imageUrl) {
+                        URL.revokeObjectURL(item.imageUrl)
+                      }
+                    }
+                    return []
+                  })
                 }}
                 disabled={!wallItems.length || isPending}
                 className="h-12 border border-ui-border-base bg-ui-bg-subtle px-8 text-sm font-semibold text-ui-fg-subtle transition-colors hover:text-ui-fg-base disabled:cursor-not-allowed disabled:opacity-45"
@@ -746,7 +786,7 @@ const CustomWallTemplate = ({
         <CustomCropModal
           draft={customDraft}
           shape="hexagon"
-          isUploading={isUploadingCustom}
+          isUploading={false}
           onCancel={closeCustomCrop}
           onConfirm={confirmCustomUpload}
           onCropChange={updateCustomCrop}

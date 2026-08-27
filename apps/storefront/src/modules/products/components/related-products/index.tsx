@@ -1,17 +1,22 @@
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
-import { flattenProductImages } from "@lib/util/flatten-product-images"
+import {
+  flattenProductImages,
+  FlatProductImageCard,
+} from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
 import ProductImageCard from "../product-image-card"
 
 type RelatedProductsProps = {
   product: HttpTypes.StoreProduct
   countryCode: string
+  moreDesignCards?: FlatProductImageCard[]
 }
 
 export default async function RelatedProducts({
   product,
   countryCode,
+  moreDesignCards = [],
 }: RelatedProductsProps) {
   const region = await getRegion(countryCode)
 
@@ -43,19 +48,16 @@ export default async function RelatedProducts({
     )
   })
 
-  if (!products.length) {
+  const imageCards = [...moreDesignCards, ...flattenProductImages(products)]
+
+  if (!imageCards.length) {
     return null
   }
-
-  const imageCards = flattenProductImages(products)
 
   return (
     <div className="product-page-constraint">
       <div className="flex flex-col items-center text-center mb-16">
-        <span className="text-base-regular text-ui-fg-subtle mb-6">
-          Related products
-        </span>
-        <p className="text-2xl-regular text-ui-fg-base max-w-lg">
+        <p className="text-xl-regular text-ui-fg-base max-w-lg">
           You might also want to check out these products.
         </p>
       </div>

@@ -27,12 +27,4 @@ export const MEGA_MENU_SECTIONS: MegaMenuSectionConfig[] = [
       { handle: "poke-framium-hexagonal", type: "collection" },
     ],
   },
-  {
-    title: "Categories",
-    entries: [
-      { handle: "anime", type: "category" },
-      { handle: "sports", type: "category" },
-      { handle: "gaming", type: "category" },
-    ],
-  },
 ]

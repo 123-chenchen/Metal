@@ -19,31 +19,45 @@ type Props = {
   >
 }
 
-export async function generateStaticParams() {
-  const product_categories = await listCategories()
+// See the products/[handle] page for why: mixing generateStaticParams with
+// any cookies()-reading code in the render tree makes Next 500 with
+// DYNAMIC_SERVER_USAGE for any path outside the pre-generated list.
+export const dynamic = "force-dynamic"
 
-  if (!product_categories) {
+export async function generateStaticParams() {
+  try {
+    const product_categories = await listCategories()
+
+    if (!product_categories) {
+      return []
+    }
+
+    const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
+      regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
+    )
+
+    const categoryHandles = product_categories.map(
+      (category: HttpTypes.StoreProductCategory) => category.handle
+    )
+
+    const staticParams = countryCodes
+      ?.map((countryCode: string | undefined) =>
+        categoryHandles.map((handle: string) => ({
+          countryCode,
+          category: [handle],
+        }))
+      )
+      .flat()
+
+    return staticParams ?? []
+  } catch (error) {
+    console.error(
+      `Failed to generate static paths for category pages: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }.`
+    )
     return []
   }
-
-  const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
-    regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
-  )
-
-  const categoryHandles = product_categories.map(
-    (category: HttpTypes.StoreProductCategory) => category.handle
-  )
-
-  const staticParams = countryCodes
-    ?.map((countryCode: string | undefined) =>
-      categoryHandles.map((handle: string) => ({
-        countryCode,
-        category: [handle],
-      }))
-    )
-    .flat()
-
-  return staticParams
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {

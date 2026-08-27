@@ -13,6 +13,14 @@ type Props = {
   searchParams: Promise<{ v_id?: string; img?: string }>
 }
 
+// retrieveCart() reads the cart cookie (via next/headers), which conflicts
+// with Next's static optimization for a route that also has
+// generateStaticParams: any path not in that pre-generated list would 500
+// with a DYNAMIC_SERVER_USAGE error instead of falling back to on-demand
+// rendering. Force per-request rendering so every product page - built at
+// deploy time or added after - works the same way.
+export const dynamic = "force-dynamic"
+
 export async function generateStaticParams() {
   try {
     const countryCodes = await listRegions().then((regions) =>

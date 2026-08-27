@@ -1,6 +1,7 @@
 import { Button } from "@modules/common/components/ui"
 import { useMemo } from "react"
 
+import CustomLineItemThumbnail from "@modules/common/components/custom-line-item-thumbnail"
 import Thumbnail from "@modules/products/components/thumbnail"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
@@ -24,7 +25,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
   }, [order])
 
   return (
-    <div className="bg-ui-bg-subtle flex flex-col" data-testid="order-card">
+    <div className="flex flex-col" data-testid="order-card">
       <div className="uppercase text-large-semi mb-1">
         #<span data-testid="order-display-id">{order.display_id}</span>
       </div>
@@ -50,7 +51,11 @@ const OrderCard = ({ order }: OrderCardProps) => {
               className="flex flex-col gap-y-2"
               data-testid="order-item"
             >
-              <Thumbnail thumbnail={i.thumbnail} images={[]} size="full" />
+              {typeof i.metadata?.custom_image_url === "string" ? (
+                <CustomLineItemThumbnail item={i} />
+              ) : (
+                <Thumbnail thumbnail={i.thumbnail} images={[]} size="auto" />
+              )}
               <div className="flex items-center text-small-regular text-ui-fg-base">
                 <span
                   className="text-ui-fg-base font-semibold"

@@ -2,7 +2,7 @@ import { randomUUID } from "crypto"
 import path from "path"
 
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, MedusaError } from "@medusajs/framework/utils"
 import { uploadFilesWorkflow } from "@medusajs/medusa/core-flows"
 
 const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024
@@ -48,19 +48,31 @@ export async function POST(
 
   const extension = getExtension(filename, mimeType)
   const storedFilename = `${Date.now()}-${randomUUID()}${extension}`
-  const { result } = await uploadFilesWorkflow(req.scope).run({
-    input: {
-      files: [
-        {
-          filename: `custom-uploads/${storedFilename}`,
-          mimeType,
-          content: fileBuffer.toString("base64"),
-          access: "public",
-        },
-      ],
-    },
-  })
-  const uploadedFile = result[0]
+  let uploadedFile: { url: string; id: string }
+
+  try {
+    const { result } = await uploadFilesWorkflow(req.scope).run({
+      input: {
+        files: [
+          {
+            filename: `custom-uploads/${storedFilename}`,
+            mimeType,
+            content: fileBuffer.toString("base64"),
+            access: "public",
+          },
+        ],
+      },
+    })
+    uploadedFile = result[0]
+  } catch (error) {
+    const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`Failed to upload custom image to storage: ${message}`, error)
+    throw new MedusaError(
+      MedusaError.Types.UNEXPECTED_STATE,
+      "Could not upload image to storage. Please try again."
+    )
+  }
 
   res.status(200).json({
     url: uploadedFile.url,

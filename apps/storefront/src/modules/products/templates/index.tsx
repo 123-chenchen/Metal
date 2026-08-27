@@ -4,7 +4,6 @@ import ImageGallery, {
   GalleryImage,
 } from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
-import ProductMoreDesigns from "@modules/products/components/product-more-designs"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
@@ -49,6 +48,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     images[0]?.id ??
     null
 
+  // The other designs/images of this product surface as their own cards in
+  // "You might also want to check out these products" below, so the PDP
+  // gallery itself only ever needs to show the one currently selected image.
+  const galleryImages = images.filter((image) => image.id === activeImageId)
+
   return (
     <>
       <div
@@ -58,15 +62,15 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         <Breadcrumb product={product} />
 
         <div className="flex flex-col small:flex-row small:items-start gap-8">
-          <div className="w-full small:w-3/5">
+          <div className="w-full small:w-1/2">
             <ImageGallery
-              images={images}
+              images={galleryImages}
               activeId={activeImageId}
               productHandle={product.handle ?? ""}
             />
           </div>
 
-          <div className="flex w-full small:w-2/5 flex-col gap-y-6">
+          <div className="flex w-full small:w-1/2 flex-col gap-y-6">
             <ProductOnboardingCta />
             <ProductInfo product={product} />
             <Suspense
@@ -92,22 +96,20 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 shippingOptions={shippingOptions}
               />
             )}
+            <ProductTabs product={product} />
           </div>
         </div>
-
-        <div className="w-full small:max-w-[640px]">
-          <ProductTabs product={product} />
-        </div>
-      </div>
-      <div className="content-container my-16 small:my-32">
-        <ProductMoreDesigns cards={moreDesignCards} region={region} />
       </div>
       <div
         className="content-container my-16 small:my-32"
         data-testid="related-products-container"
       >
         <Suspense fallback={<SkeletonRelatedProducts />}>
-          <RelatedProducts product={product} countryCode={countryCode} />
+          <RelatedProducts
+            product={product}
+            countryCode={countryCode}
+            moreDesignCards={moreDesignCards}
+          />
         </Suspense>
       </div>
     </>

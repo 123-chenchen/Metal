@@ -6,6 +6,7 @@ import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { Button, clx } from "@modules/common/components/ui"
 import ProductPrice from "@modules/products/components/product-price"
+import Product3DView from "@modules/products/components/product-3d-view"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import {
   buildCropImageStyle,
@@ -21,7 +22,13 @@ import { ChangeEvent, useEffect, useMemo, useState, useTransition } from "react"
 
 type UploadedCustomImage = {
   id: string
+  // Local blob preview - always present, never touches cloud storage.
   imageUrl: string
+  // Set only once this image has actually been uploaded to cloud storage,
+  // which happens lazily at "Add to cart" time rather than at crop-confirm,
+  // so previewing/demoing designs never writes to storage.
+  remoteUrl?: string
+  file: File
   filename: string
   crop: CustomCrop
 }
@@ -39,6 +46,11 @@ type AddItemsToCartAction = (input: {
 
 const PREVIEW_RECT_WIDTH = 460
 const PREVIEW_RECT_HEIGHT = 594
+// Mirrors the backend's own cap (apps/backend/src/api/store/custom/uploads/route.ts)
+// so oversized files are rejected here instead of tripping the JSON body-size
+// limit server-side, whose error response the browser can't surface (no CORS
+// headers on that path), leaving the upload looking stuck forever.
+const MAX_CUSTOM_IMAGE_BYTES = 8 * 1024 * 1024
 
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
@@ -57,8 +69,8 @@ const StandardCustomTemplate = ({
   const router = useRouter()
   const [images, setImages] = useState<UploadedCustomImage[]>([])
   const [activeImageId, setActiveImageId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<"photo" | "spin">("photo")
   const [draft, setDraft] = useState<CustomUploadDraft | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -102,6 +114,11 @@ const StandardCustomTemplate = ({
       return
     }
 
+    if (file.size > MAX_CUSTOM_IMAGE_BYTES) {
+      setError("Image must be 8 MB or smaller")
+      return
+    }
+
     if (draft?.previewUrl) {
       URL.revokeObjectURL(draft.previewUrl)
     }
@@ -137,32 +154,26 @@ const StandardCustomTemplate = ({
     )
   }
 
-  const confirmUpload = async () => {
+  // No network call here on purpose: cropping/previewing a design must never
+  // write to cloud storage. The file only gets uploaded lazily in addToCart,
+  // once the customer actually commits the design to their cart.
+  const confirmUpload = () => {
     if (!draft) {
       return
     }
 
-    setError(null)
-    setIsUploading(true)
-
-    try {
-      const payload = await uploadCustomImage(draft.file)
-
-      const nextImage = {
-        id: createImageId(),
-        imageUrl: payload.url,
-        filename: payload.filename ?? draft.file.name,
-        crop: draft.crop,
-      }
-
-      setImages((current) => [...current, nextImage])
-      setActiveImageId(nextImage.id)
-      closeCrop()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not upload custom image")
-    } finally {
-      setIsUploading(false)
+    const nextImage: UploadedCustomImage = {
+      id: createImageId(),
+      imageUrl: draft.previewUrl,
+      file: draft.file,
+      filename: draft.file.name,
+      crop: draft.crop,
     }
+
+    setImages((current) => [...current, nextImage])
+    setActiveImageId(nextImage.id)
+    setViewMode("photo")
+    setDraft(null)
   }
 
   const addToCart = () => {
@@ -179,9 +190,25 @@ const StandardCustomTemplate = ({
     setSuccessMessage(null)
     startTransition(async () => {
       try {
+        const uploaded = await Promise.all(
+          images.map(async (image) => {
+            if (image.remoteUrl) {
+              return image
+            }
+
+            const payload = await uploadCustomImage(image.file)
+            return {
+              ...image,
+              remoteUrl: payload.url,
+              filename: payload.filename ?? image.filename,
+            }
+          })
+        )
+        setImages(uploaded)
+
         await addItemsToCartAction({
           countryCode,
-          items: images.map((image, index) => ({
+          items: uploaded.map((image, index) => ({
             source: "custom_standard",
             variantId: selectedVariant.id,
             quantity: 1,
@@ -189,7 +216,7 @@ const StandardCustomTemplate = ({
             productId: product.id,
             productTitle: product.title,
             customItemIndex: index + 1,
-            imageUrl: image.imageUrl,
+            imageUrl: image.remoteUrl,
             originalFilename: image.filename,
             crop: image.crop,
           })),
@@ -208,7 +235,13 @@ const StandardCustomTemplate = ({
   }
 
   const removeImage = (imageId: string) => {
-    setImages((current) => current.filter((item) => item.id !== imageId))
+    setImages((current) => {
+      const target = current.find((item) => item.id === imageId)
+      if (target) {
+        URL.revokeObjectURL(target.imageUrl)
+      }
+      return current.filter((item) => item.id !== imageId)
+    })
     setActiveImageId((current) => {
       if (current !== imageId) {
         return current
@@ -233,49 +266,71 @@ const StandardCustomTemplate = ({
                   key={image.id}
                   image={image}
                   index={index + 1}
-                  isActive={activeImage?.id === image.id}
+                  isActive={viewMode === "photo" && activeImage?.id === image.id}
                   onRemove={() => removeImage(image.id)}
-                  onSelect={() => setActiveImageId(image.id)}
+                  onSelect={() => {
+                    setActiveImageId(image.id)
+                    setViewMode("photo")
+                  }}
                 />
               ))}
-              <label className="grid h-[78px] w-[64px] shrink-0 cursor-pointer place-items-center border border-dashed border-ui-border-base bg-ui-bg-subtle text-2xl text-ui-fg-muted transition-colors hover:text-ui-fg-base">
-                +
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={handleFileChange}
-                />
-              </label>
+              <button
+                type="button"
+                onClick={() => setViewMode("spin")}
+                disabled={!activeImage}
+                className={clx(
+                  "grid h-[78px] w-[64px] shrink-0 place-items-center border text-[11px] font-semibold tracking-wide transition-colors",
+                  viewMode === "spin"
+                    ? "border-ui-fg-interactive bg-ui-bg-base text-ui-fg-interactive"
+                    : "border-ui-border-base bg-ui-bg-subtle text-ui-fg-muted hover:text-ui-fg-base",
+                  { "cursor-not-allowed opacity-40": !activeImage }
+                )}
+              >
+                360°
+              </button>
             </div>
 
             <div className="order-1 grid place-items-center medium:order-2">
               <div
-                className="relative grid w-full place-items-center overflow-hidden bg-ui-bg-subtle"
+                className="relative grid w-full place-items-center overflow-hidden"
                 style={{ minHeight: 520 }}
               >
-                <div
-                  className="relative grid place-items-center overflow-hidden bg-ui-bg-base"
-                  style={{
-                    height: "min(72vw, 594px)",
-                    maxHeight: PREVIEW_RECT_HEIGHT,
-                    maxWidth: PREVIEW_RECT_WIDTH,
-                    width: "min(56vw, 460px)",
-                  }}
-                >
-                  {activeImage ? (
-                    <CroppedRectImage image={activeImage} />
-                  ) : (
-                    <div className="grid gap-3 px-10 text-center">
-                      <div className="mx-auto grid h-12 w-12 place-items-center border border-ui-border-base text-2xl text-ui-fg-muted">
-                        +
-                      </div>
-                      <p className="text-sm font-semibold uppercase tracking-normal text-ui-fg-subtle">
-                        Upload custom image
-                      </p>
-                    </div>
-                  )}
-                </div>
+                {activeImage && viewMode === "spin" ? (
+                  <Product3DView
+                    imageUrl={activeImage.imageUrl}
+                    crop={activeImage.crop}
+                    frameRatio={PREVIEW_RECT_WIDTH / PREVIEW_RECT_HEIGHT}
+                  />
+                ) : (
+                  <div
+                    className="relative grid place-items-center overflow-hidden bg-ui-bg-base"
+                    style={{
+                      height: "min(72vw, 594px)",
+                      maxHeight: PREVIEW_RECT_HEIGHT,
+                      maxWidth: PREVIEW_RECT_WIDTH,
+                      width: "min(56vw, 460px)",
+                    }}
+                  >
+                    {activeImage ? (
+                      <CroppedRectImage image={activeImage} />
+                    ) : (
+                      <label className="grid cursor-pointer gap-3 px-10 text-center">
+                        <div className="mx-auto grid h-12 w-12 place-items-center border border-ui-border-base text-2xl text-ui-fg-muted">
+                          +
+                        </div>
+                        <p className="text-sm font-semibold uppercase tracking-normal text-ui-fg-subtle">
+                          Upload custom image
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -292,25 +347,7 @@ const StandardCustomTemplate = ({
             </p>
           </div>
 
-          <div className="border border-ui-border-base bg-ui-bg-subtle p-4">
-            <p className="text-sm font-bold text-ui-fg-base">
-              {activeImage
-                ? `${itemCount} custom image${itemCount > 1 ? "s" : ""} added`
-                : "Upload a custom image"}
-            </p>
-            <p className="mt-1 text-sm leading-6 text-ui-fg-subtle">
-              Each image becomes its own poster in your cart.
-            </p>
-            <label className="mt-4 grid h-11 cursor-pointer place-items-center border border-ui-border-base bg-ui-bg-subtle px-5 text-sm font-bold uppercase text-ui-fg-base transition-colors hover:bg-ui-bg-subtle-hover">
-              Add image
-              <input
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                onChange={handleFileChange}
-              />
-            </label>
-          </div>
+       
 
           {(product.options ?? []).length > 0 &&
             (product.variants?.length ?? 0) > 1 && (
@@ -390,7 +427,7 @@ const StandardCustomTemplate = ({
         <CustomCropModal
           draft={draft}
           shape="rectangle"
-          isUploading={isUploading}
+          isUploading={false}
           onCancel={closeCrop}
           onConfirm={confirmUpload}
           onCropChange={updateCrop}

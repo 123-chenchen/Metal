@@ -32,7 +32,7 @@ const AccountInfo = ({
 
   const handleToggle = () => {
     clearState()
-    setTimeout(() => toggle(), 100)
+    toggle()
   }
 
   useEffect(() => {

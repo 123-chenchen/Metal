@@ -162,7 +162,7 @@ export const CustomCropModal = ({
 
   return (
     <div className="fixed inset-0 z-[90] grid place-items-center bg-black/40 px-4 py-6">
-      <div className="w-full max-w-[460px] rounded-[18px] border border-ui-border-base bg-ui-bg-subtle px-6 pb-6 pt-6 text-ui-fg-base shadow-2xl">
+      <div className="w-full max-w-[460px] border border-ui-border-base bg-ui-bg-subtle px-6 pb-6 pt-6 text-ui-fg-base shadow-2xl">
         <div className="relative mb-2 text-center">
           <h2 className="text-[22px] font-bold leading-7 text-ui-fg-base">
             Crop Your Image
@@ -190,7 +190,7 @@ export const CustomCropModal = ({
 
         <div className="grid justify-center">
           <div
-            className="relative cursor-grab overflow-hidden rounded-[10px] bg-ui-bg-subtle active:cursor-grabbing"
+            className="relative cursor-grab overflow-hidden bg-ui-bg-subtle active:cursor-grabbing"
             style={{
               height: CROP_FRAME_HEIGHT,
               width: CROP_FRAME_WIDTH,

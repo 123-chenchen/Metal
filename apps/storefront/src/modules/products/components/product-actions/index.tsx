@@ -7,6 +7,7 @@ import { SelectedImage } from "@lib/util/flatten-product-images"
 import { HttpTypes } from "@medusajs/types"
 import { Button, clx } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
+import ErrorMessage from "@modules/checkout/components/error-message"
 import Heart from "@modules/common/icons/heart"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
@@ -45,6 +46,7 @@ export default function ProductActions({
   const [isAdding, setIsAdding] = useState(false)
   const [isBuyingNow, setIsBuyingNow] = useState(false)
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false)
+  const [cartError, setCartError] = useState<string | null>(null)
   const { isWishlisted: checkWishlisted, toggle: toggleWishlist } =
     useWishlist()
   const wishlistImageIndex = selectedImage?.index ?? 1
@@ -133,19 +135,31 @@ export default function ProductActions({
   // add the selected variant to the cart
   const handleAddToCart = async () => {
     setIsAdding(true)
-    await addSelectedVariantToCart()
-    setIsAdding(false)
+    setCartError(null)
+    try {
+      await addSelectedVariantToCart()
+    } catch (err) {
+      setCartError(err instanceof Error ? err.message : "Failed to add to cart")
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   // add the selected variant to the cart and jump straight to checkout
   const handleBuyNow = async () => {
     setIsBuyingNow(true)
-    const added = await addSelectedVariantToCart()
-    if (added) {
-      router.push(`/${countryCode}/checkout?step=address`)
-      return
+    setCartError(null)
+    try {
+      const added = await addSelectedVariantToCart()
+      if (added) {
+        router.push(`/${countryCode}/checkout?step=address`)
+        return
+      }
+    } catch (err) {
+      setCartError(err instanceof Error ? err.message : "Failed to add to cart")
+    } finally {
+      setIsBuyingNow(false)
     }
-    setIsBuyingNow(false)
   }
 
   return (
@@ -216,6 +230,8 @@ export default function ProductActions({
             />
           </button>
         </div>
+
+        <ErrorMessage error={cartError} data-testid="add-to-cart-error-message" />
 
         <Button
           onClick={handleBuyNow}

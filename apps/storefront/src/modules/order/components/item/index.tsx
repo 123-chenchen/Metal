@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Table, Text } from "@modules/common/components/ui"
 
+import CustomLineItemThumbnail from "@modules/common/components/custom-line-item-thumbnail"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
@@ -12,11 +13,17 @@ type ItemProps = {
 }
 
 const Item = ({ item, currencyCode }: ItemProps) => {
+  const isCustom = typeof item.metadata?.custom_image_url === "string"
+
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
         <div className="flex w-16">
-          <Thumbnail thumbnail={item.thumbnail} size="square" />
+          {isCustom ? (
+            <CustomLineItemThumbnail item={item} />
+          ) : (
+            <Thumbnail thumbnail={item.thumbnail} size="auto" bare />
+          )}
         </div>
       </Table.Cell>
 
