@@ -50,6 +50,9 @@ deploy/env/*.env
 # vercel
 .vercel
 
+# netlify (project deploys via EC2 + Nginx, not Netlify)
+.netlify
+
 # macOS system files
 .DS_Store
 .DS_Store?
