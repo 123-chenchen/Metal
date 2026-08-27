@@ -12,6 +12,10 @@ const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
+  // Standalone output for Docker: bundles a minimal server + only the
+  // node_modules actually needed at runtime, instead of shipping the full
+  // monorepo-resolved node_modules into the image.
+  output: "standalone",
   reactStrictMode: true,
   logging: {
     fetches: {

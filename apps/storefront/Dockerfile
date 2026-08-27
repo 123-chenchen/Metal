@@ -58,6 +58,8 @@ RUN npm run build --workspace=@dtc/storefront
 
 FROM node:20-bookworm-slim AS runner
 
+# ARGs must be redeclared in this stage to stay in scope for the ENV block
+# below - see the builder stage above for what each one means.
 ARG NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
 ARG NEXT_PUBLIC_DEFAULT_REGION=us
@@ -69,12 +71,14 @@ ARG NEXT_PUBLIC_MEDUSA_PAYMENTS_PUBLISHABLE_KEY
 ARG MEDUSA_CLOUD_S3_HOSTNAME
 ARG MEDUSA_CLOUD_S3_PATHNAME
 
+# NEXT_PUBLIC_* values are already baked into the client bundle copied below
+# (see the builder stage). These are only redeclared so any server-side code
+# reading process.env.NEXT_PUBLIC_* at request time sees the same values it
+# was built with, rather than depending on the container's env at runtime.
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     PORT=8000 \
     NEXT_TELEMETRY_DISABLED=1 \
-    NPM_CONFIG_UPDATE_NOTIFIER=false \
-    NPM_CONFIG_FUND=false \
     NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY \
     NEXT_PUBLIC_MEDUSA_BACKEND_URL=$NEXT_PUBLIC_MEDUSA_BACKEND_URL \
     NEXT_PUBLIC_DEFAULT_REGION=$NEXT_PUBLIC_DEFAULT_REGION \
@@ -88,19 +92,12 @@ ENV NODE_ENV=production \
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-COPY apps/backend/package.json ./apps/backend/package.json
-COPY apps/storefront/package.json ./apps/storefront/package.json
-
-RUN npm ci --omit=dev --workspace=@dtc/storefront --include-workspace-root \
-    && npm cache clean --force
-
-COPY --chown=node:node --from=builder /app/apps/storefront/.next ./apps/storefront/.next
-COPY --chown=node:node apps/storefront/check-env-variables.js ./apps/storefront/check-env-variables.js
-COPY --chown=node:node apps/storefront/next.config.js ./apps/storefront/next.config.js
-COPY --chown=node:node apps/storefront/public ./apps/storefront/public
-
-WORKDIR /app/apps/storefront
+# Next's standalone output already includes a minimal server.js plus only
+# the node_modules it actually needs - no separate npm install here, and
+# the image never needs npm/the lockfile at runtime.
+COPY --chown=node:node --from=builder /app/apps/storefront/.next/standalone ./
+COPY --chown=node:node --from=builder /app/apps/storefront/.next/static ./apps/storefront/.next/static
+COPY --chown=node:node --from=builder /app/apps/storefront/public ./apps/storefront/public
 
 USER node
 
@@ -109,4 +106,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD ["node", "-e", "fetch('http://127.0.0.1:8000/').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
 
-CMD ["npm", "run", "start"]
+CMD ["node", "apps/storefront/server.js"]
