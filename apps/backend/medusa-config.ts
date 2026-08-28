@@ -85,6 +85,19 @@ module.exports = defineConfig({
       jwtSecret: process.env.JWT_SECRET,
       cookieSecret: process.env.COOKIE_SECRET,
     },
+
+    // Medusa forces the session cookie's Secure flag whenever NODE_ENV is
+    // production/staging, which browsers reject over plain HTTP (e.g. a
+    // local Docker rebuild served at http://localhost). Set
+    // COOKIE_SECURE=false in that env file only; real deployments stay on
+    // HTTPS and never set this, so the flag defaults on. express-loader
+    // reads cookieOptions off projectConfig directly (a sibling of http),
+    // and spreads it in (rather than a literal property) because
+    // cookieOptions isn't in the installed framework version's
+    // ConfigModule type yet.
+    ...(process.env.COOKIE_SECURE === "false"
+      ? { cookieOptions: { secure: false } }
+      : {}),
   },
 
   modules: [
