@@ -5,6 +5,8 @@ import {
 import { MedusaError } from "@medusajs/framework/utils"
 import WishlistModuleService from "../../../modules/wishlist/service"
 import { WISHLIST_MODULE } from "../../../modules/wishlist"
+import { DESIGN_MODULE } from "../../../modules/design"
+import DesignModuleService from "../../../modules/design/service"
 
 function getOwner(req: AuthenticatedMedusaRequest) {
   const customerId = req.auth_context?.actor_id || null
@@ -42,15 +44,15 @@ export async function GET(
       )
       const existingKeys = new Set(
         existingCustomerItems.map(
-          (item) => `${item.product_id}:${item.image_index}`
+          (item) => `${item.product_id}:${item.design_id ?? item.image_index}`
         )
       )
 
       const toClaim = guestItems.filter(
-        (item) => !existingKeys.has(`${item.product_id}:${item.image_index}`)
+        (item) => !existingKeys.has(`${item.product_id}:${item.design_id ?? item.image_index}`)
       )
       const toRemove = guestItems.filter((item) =>
-        existingKeys.has(`${item.product_id}:${item.image_index}`)
+        existingKeys.has(`${item.product_id}:${item.design_id ?? item.image_index}`)
       )
 
       if (toClaim.length) {
@@ -78,6 +80,7 @@ export async function GET(
   res.status(200).json({
     items: items.map((item) => ({
       product_id: item.product_id,
+      design_id: item.design_id,
       image_index: item.image_index,
     })),
   })
@@ -87,6 +90,7 @@ export async function POST(
   req: AuthenticatedMedusaRequest<{
     product_id?: unknown
     image_index?: unknown
+    design_id?: unknown
     guest_id?: unknown
   }>,
   res: MedusaResponse
@@ -98,9 +102,16 @@ export async function POST(
   const productId =
     typeof req.body.product_id === "string" ? req.body.product_id : ""
   const imageIndex = Math.max(1, Math.floor(Number(req.body.image_index) || 1))
+  const designId = typeof req.body.design_id === "string" ? req.body.design_id : null
 
   if (!productId) {
     throw new MedusaError(MedusaError.Types.INVALID_DATA, "product_id is required")
+  }
+
+  if (designId) {
+    const designs = req.scope.resolve<DesignModuleService>(DESIGN_MODULE)
+    const matches = await designs.listDesigns({ id: designId, product_id: productId, active: true, archived: false }, { take: 1 })
+    if (!matches.length) throw new MedusaError(MedusaError.Types.INVALID_DATA, "Design unavailable")
   }
 
   const customerId = req.auth_context?.actor_id || null
@@ -118,13 +129,14 @@ export async function POST(
 
   const existing = await wishlistModuleService.listWishlistItems({
     product_id: productId,
-    image_index: imageIndex,
+    ...(designId ? { design_id: designId } : { image_index: imageIndex, design_id: null }),
     ...(customerId ? { customer_id: customerId } : { guest_id: guestId! }),
   })
 
   if (!existing.length) {
     await wishlistModuleService.createWishlistItems({
       product_id: productId,
+      design_id: designId,
       image_index: imageIndex,
       customer_id: customerId,
       guest_id: customerId ? null : guestId,

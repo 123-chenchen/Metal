@@ -29,7 +29,7 @@ export default async function Home(props: {
 
   return (
     <>
-      <Hero slides={homeContent?.hero_slides ?? []} />
+      <Hero config={homeContent?.hero_config} />
       <FeaturesBar />
       <FeaturedGrid items={homeContent?.grid_items ?? []} />
     </>

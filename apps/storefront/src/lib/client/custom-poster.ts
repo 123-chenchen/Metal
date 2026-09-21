@@ -6,13 +6,21 @@ const MEDUSA_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
 type CustomUploadResponse = {
   url: string
+  cropped_url?: string
   filename: string
   mime_type: string
   size: number
 }
 
 export async function uploadCustomImage(
-  file: File
+  file: File,
+  crop?: {
+    offsetX: number
+    offsetY: number
+    zoom: number
+    imageRatio?: number | null
+  },
+  shape?: "rectangle" | "hexagon"
 ): Promise<CustomUploadResponse> {
   const response = await fetch(`${MEDUSA_BACKEND_URL}/store/custom/uploads`, {
     method: "POST",
@@ -23,6 +31,8 @@ export async function uploadCustomImage(
         : {}),
     },
     body: JSON.stringify({
+      crop,
+      shape,
       filename: file.name,
       mime_type: file.type,
       data_url: await readFileAsDataUrl(file),
@@ -37,6 +47,9 @@ export async function uploadCustomImage(
   return {
     ...(payload as CustomUploadResponse),
     url: normalizeAssetUrl(payload.url),
+    cropped_url: payload.cropped_url
+      ? normalizeAssetUrl(payload.cropped_url)
+      : undefined,
   }
 }
 

@@ -9,22 +9,24 @@ import Heart from "@modules/common/icons/heart"
 const WishlistToggleButton = ({
   productId,
   imageIndex,
+  designId,
   className,
 }: {
   productId: string
   imageIndex: number
+  designId?: string
   className?: string
 }) => {
   const { isWishlisted, toggle } = useWishlist()
   const [isToggling, setIsToggling] = useState(false)
-  const active = isWishlisted(productId, imageIndex)
+  const active = isWishlisted(productId, imageIndex, designId)
 
   const handleClick = async (event: React.MouseEvent) => {
     event.preventDefault()
     event.stopPropagation()
     setIsToggling(true)
     try {
-      await toggle(productId, imageIndex)
+      await toggle(productId, imageIndex, designId)
     } finally {
       setIsToggling(false)
     }

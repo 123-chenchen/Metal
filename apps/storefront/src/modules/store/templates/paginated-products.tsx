@@ -1,6 +1,5 @@
-import { listProductsWithSort } from "@lib/data/products"
+import { listDesignCards } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
-import { flattenProductImages } from "@lib/util/flatten-product-images"
 import { OptionValueIds } from "@lib/util/product-option-filters"
 import ProductImageCard from "@modules/products/components/product-image-card"
 import { Pagination } from "@modules/store/components/pagination"
@@ -66,9 +65,7 @@ export default async function PaginatedProducts({
     return null
   }
 
-  const {
-    response: { products, count },
-  } = await listProductsWithSort({
+  const { cards: imageCards, count } = await listDesignCards({
     page,
     queryParams,
     sortBy,
@@ -77,7 +74,6 @@ export default async function PaginatedProducts({
   })
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
-  const imageCards = flattenProductImages(products)
 
   if (!imageCards.length) {
     return <p className="text-ui-fg-subtle">No products found.</p>

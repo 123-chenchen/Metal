@@ -8,8 +8,11 @@ import { getOrSetCart } from "./cart"
 
 export type CustomCartItemInput = {
   source: "product" | "custom_wall" | "custom_hexagon" | "custom_standard"
+  selectedDesignId?: string
+  selectedImageIndex?: number
   variantId: string
   quantity: number
+  croppedImageUrl?: string | null
   imageUrl?: string | null
   originalFilename?: string | null
   wallSlot?: number | null
@@ -45,8 +48,11 @@ export async function addCustomItemsToCart({
       items: items.map((item) => ({
         source: item.source,
         variant_id: item.variantId,
+        selected_design_id: item.selectedDesignId,
+        selected_image_index: item.selectedImageIndex,
         quantity: item.quantity,
         image_url: item.imageUrl,
+        cropped_image_url: item.croppedImageUrl,
         original_filename: item.originalFilename,
         wall_slot: item.wallSlot,
         crop: item.crop,

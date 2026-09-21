@@ -99,6 +99,7 @@ export default async function CategoryPage(props: Props) {
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
+      collectionId={typeof searchParams.collection_id === "string" ? searchParams.collection_id : undefined}
       optionValueIds={optionValueIds}
     />
   )

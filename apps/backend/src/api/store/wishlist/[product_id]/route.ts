@@ -15,6 +15,7 @@ export async function DELETE(
   )
 
   const productId = req.params.product_id
+  const designId = typeof req.query.design_id === "string" ? req.query.design_id : null
   const imageIndex = Math.max(
     1,
     Math.floor(Number(req.query.image_index) || 1)
@@ -32,7 +33,7 @@ export async function DELETE(
 
   const existing = await wishlistModuleService.listWishlistItems({
     product_id: productId,
-    image_index: imageIndex,
+    ...(designId ? { design_id: designId } : { image_index: imageIndex, design_id: null }),
     ...(customerId ? { customer_id: customerId } : { guest_id: guestId! }),
   })
 

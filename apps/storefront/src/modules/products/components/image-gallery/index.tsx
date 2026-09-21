@@ -7,6 +7,9 @@ import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { clx } from "@modules/common/components/ui"
 import Product3DView from "@modules/products/components/product-3d-view"
+import { ProductDesign } from "@lib/util/designs"
+import DesignArtwork from "../design-artwork"
+import Design3DView from "../design-3d-view"
 
 export type GalleryImage = {
   id: string
@@ -18,6 +21,7 @@ type ImageGalleryProps = {
   images: GalleryImage[]
   activeId: string | null
   productHandle: string
+  design?: ProductDesign
 }
 
 const ZoomableImage = ({ image }: { image: GalleryImage }) => {
@@ -72,20 +76,19 @@ const ZoomableImage = ({ image }: { image: GalleryImage }) => {
   )
 }
 
-// Extra blank frames rendered after the real thumbnails so there's a visual
-// slot ready to go as soon as more photos/designs are uploaded for this
-// product, without changing the rail layout.
-const EMPTY_THUMBNAIL_SLOTS = 2
-
-const ImageGallery = ({ images, activeId, productHandle }: ImageGalleryProps) => {
+// Supplementary gallery selection is local and never changes the purchased design.
+const ImageGallery = ({ images, activeId, productHandle, design }: ImageGalleryProps) => {
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<"photo" | "spin">("photo")
+  const [selectedId, setSelectedId] = useState(activeId)
+  useEffect(() => { setSelectedId(activeId); setViewMode("photo") }, [activeId, design?.id])
 
   if (!images.length) {
     return null
   }
 
-  const activeImage = images.find((image) => image.id === activeId) ?? images[0]
+  const activeImage = images.find((image) => image.id === (design ? selectedId : activeId)) ?? images[0]
+  const isPrimary = activeImage.id === images[0].id
 
   const hrefForImage = (index: number) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -96,7 +99,13 @@ const ImageGallery = ({ images, activeId, productHandle }: ImageGalleryProps) =>
   return (
     <div className="flex w-full items-start gap-4 small:flex-row flex-col-reverse">
       <div className="flex small:flex-col gap-2.5 small:w-[84px] w-full overflow-x-auto small:overflow-visible no-scrollbar">
-        {images.map((image) => (
+        {design ? images.map((image, index) => (
+          <button type="button" key={image.id} aria-label={index === 0 ? "Primary artwork" : `Gallery image ${index}`} aria-pressed={activeImage.id === image.id && viewMode === "photo"}
+            className={clx("relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base bg-ui-bg-subtle", activeImage.id === image.id && viewMode === "photo" ? "ring-2 ring-ui-fg-interactive" : "opacity-60")}
+            onClick={() => { setSelectedId(image.id); setViewMode("photo") }}>
+            {index === 0 ? <DesignArtwork url={image.url} title={design.title} design={design} /> : <Image src={image.url} alt={`Gallery ${index}`} fill sizes="80px" className="object-cover" />}
+          </button>
+        )) : images.map((image) => (
           <LocalizedClientLink
             key={image.id}
             href={hrefForImage(image.index)}
@@ -119,7 +128,7 @@ const ImageGallery = ({ images, activeId, productHandle }: ImageGalleryProps) =>
           </LocalizedClientLink>
         ))}
 
-        <button
+        {isPrimary && <button
           type="button"
           onClick={() => setViewMode("spin")}
           className={clx(
@@ -130,21 +139,14 @@ const ImageGallery = ({ images, activeId, productHandle }: ImageGalleryProps) =>
           )}
         >
           360°
-        </button>
-
-        {Array.from({ length: EMPTY_THUMBNAIL_SLOTS }).map((_, index) => (
-          <div
-            key={`empty-thumbnail-slot-${index}`}
-            className="aspect-square shrink-0 w-16 small:w-full rounded-base border border-dashed border-ui-border-base"
-          />
-        ))}
+        </button>}
       </div>
 
       <div className="flex-1 w-full">
         {viewMode === "photo" ? (
-          <ZoomableImage image={activeImage} />
+          design && isPrimary ? <div className="flex justify-center items-center max-h-[65vh]"><DesignArtwork url={design.artwork_url} title={design.title} design={design} /></div> : <ZoomableImage image={activeImage} />
         ) : (
-          <Product3DView imageUrl={activeImage.url} />
+          design ? <Design3DView design={design} /> : <Product3DView imageUrl={images[0].url} />
         )}
       </div>
     </div>

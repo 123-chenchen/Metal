@@ -17,11 +17,13 @@ export default async function CategoryTemplate({
   page,
   countryCode,
   optionValueIds,
+  collectionId,
 }: {
   category: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  collectionId?: string
   optionValueIds?: OptionValueIds
 }) {
   const pageNumber = page ? parseInt(page) : 1
@@ -47,6 +49,8 @@ export default async function CategoryTemplate({
       <CollectionFilterBar
         sortBy={sort}
         collections={collections}
+        categoryId={category.id}
+        collectionId={collectionId}
         data-testid="sort-by-container"
         hideOptionsPicker
       />
@@ -96,6 +100,7 @@ export default async function CategoryTemplate({
             sortBy={sort}
             page={pageNumber}
             categoryId={category.id}
+            collectionId={collectionId}
             countryCode={countryCode}
             optionValueIds={optionValueIds}
           />

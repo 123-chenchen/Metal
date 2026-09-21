@@ -6,6 +6,7 @@ import { listProducts } from "@lib/data/products"
 import { useWishlist } from "@lib/hooks/use-wishlist"
 import { HttpTypes } from "@medusajs/types"
 import WishlistProductCard from "../components/wishlist-product-card"
+import { productDesigns } from "@lib/util/designs"
 
 const WishlistTemplate = ({ countryCode }: { countryCode: string }) => {
   const { entries, loaded } = useWishlist()
@@ -56,10 +57,13 @@ const WishlistTemplate = ({ countryCode }: { countryCode: string }) => {
   const cards = entries
     .map((entry) => {
       const product = productsById.get(entry.product_id)
-      return product ? { product, imageIndex: entry.image_index } : null
+      if (!product) return null
+      const design = productDesigns(product).find((item) => entry.design_id ? item.id === entry.design_id : item.legacy_index === entry.image_index)
+      if (entry.design_id && (!design || !design.active || design.archived)) return null
+      return { product, imageIndex: entry.image_index, designId: entry.design_id ?? undefined }
     })
     .filter(
-      (card): card is { product: HttpTypes.StoreProduct; imageIndex: number } =>
+      (card): card is { product: HttpTypes.StoreProduct; imageIndex: number; designId: string | undefined } =>
         !!card
     )
 
@@ -83,9 +87,9 @@ const WishlistTemplate = ({ countryCode }: { countryCode: string }) => {
           className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-5 gap-x-2 gap-y-4"
           data-testid="wishlist-product-grid"
         >
-          {cards.map(({ product, imageIndex }) => (
-            <li key={`${product.id}-${imageIndex}`}>
-              <WishlistProductCard product={product} imageIndex={imageIndex} />
+          {cards.map(({ product, imageIndex, designId }) => (
+            <li key={`${product.id}-${designId ?? imageIndex}`}>
+              <WishlistProductCard product={product} imageIndex={imageIndex} designId={designId} />
             </li>
           ))}
         </ul>

@@ -20,6 +20,9 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   disabled,
 }) => {
   const filteredOptions = (option.values ?? []).map((v) => v.value)
+  if (/^default( option)?$/i.test(title.trim()) && filteredOptions.length === 1 && /^default( value)?$/i.test(filteredOptions[0].trim())) {
+    return null
+  }
 
   return (
     <div className="flex flex-col gap-y-3">

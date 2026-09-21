@@ -2,6 +2,9 @@
 
 import { uploadCustomImage } from "@lib/client/custom-poster"
 import type { CustomCartItemInput } from "@lib/data/custom-poster"
+import { flattenProductImages } from "@lib/util/flatten-product-images"
+import { ProductDesign, designHref } from "@lib/util/designs"
+import DesignArtwork from "@modules/products/components/design-artwork"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
@@ -34,8 +37,9 @@ const DRAG_MIME = "application/x-custom-wall-item"
 // headers on that path), leaving the upload looking stuck forever.
 const MAX_CUSTOM_IMAGE_BYTES = 8 * 1024 * 1024
 const WALL_ROWS = [11, 10, 11, 10, 11]
-const WALL_SLOT_WIDTH = 86
 const WALL_SLOT_HEIGHT = 100
+const WALL_SLOT_WIDTH =
+  (WALL_SLOT_HEIGHT * CROP_FRAME_WIDTH) / CROP_FRAME_HEIGHT
 const WALL_GAP = 2
 const WALL_X_STEP = WALL_SLOT_WIDTH + WALL_GAP
 const WALL_Y_STEP = WALL_SLOT_HEIGHT * 0.75 + WALL_GAP / 2
@@ -61,6 +65,8 @@ const PLACEMENT_ORDER = [...WALL_SLOTS]
   .map((slot) => slot.slot)
 
 type WallItem = {
+  design?: ProductDesign
+  imageIndex?: number
   slot: number
   productId: string
   variantId: string
@@ -72,6 +78,7 @@ type WallItem = {
   // Set only once this custom item has actually been uploaded to cloud
   // storage, which happens lazily at "Add to cart" time so previewing a
   // wall layout never writes to storage.
+  croppedUrl?: string
   remoteUrl?: string
   file?: File
   originalFilename?: string | null
@@ -80,6 +87,10 @@ type WallItem = {
 }
 
 type ProductOption = {
+  productId: string
+  design?: ProductDesign
+  imageIndex?: number
+  href?: string
   id: string
   title: string
   handle?: string | null
@@ -150,17 +161,25 @@ const CustomWallTemplate = ({
   const [isPending, startTransition] = useTransition()
 
   const productOptions = useMemo(
-    () => products.map(toProductOption).filter((product) => product.variantId),
+    () =>
+      flattenProductImages(products)
+        .map((card) => ({
+          ...toProductOption(card.product),
+          id: `${card.product.id}:${card.image.id}`,
+          title: card.designName,
+          imageUrl: card.image.url,
+          design: card.design,
+          imageIndex: card.imageIndex,
+          href: designHref(card.product, card.design?.id, card.imageIndex),
+        }))
+        .filter((product) => product.variantId),
     [products]
   )
 
   const customProduct = useMemo(
-    () => productOptions.find(isCustomWallProduct) ?? null,
-    [productOptions]
+    () => products.map(toProductOption).find(isCustomWallProduct) ?? null,
+    [products]
   )
-  // hexagon-metal-posters is a real, visible product: it both backs the
-  //"upload your own image"tile below AND stays selectable as a normal
-  // catalog tile, so the picker list is not filtered.
   const shopProductOptions = productOptions
 
   const visibleProducts = useMemo(() => {
@@ -169,7 +188,9 @@ const CustomWallTemplate = ({
       selectedCollectionId === "all"
         ? shopProductOptions
         : shopProductOptions.filter((product) => {
-            const source = products.find((item) => item.id === product.id)
+            const source = products.find(
+              (item) => item.id === product.productId
+            )
 
             return source?.collection_id === selectedCollectionId
           })
@@ -210,7 +231,9 @@ const CustomWallTemplate = ({
       ...current,
       {
         slot,
-        productId: product.id,
+        productId: product.productId,
+        design: product.design,
+        imageIndex: product.imageIndex,
         variantId: product.variantId!,
         title: product.title,
         source: "product",
@@ -234,7 +257,9 @@ const CustomWallTemplate = ({
         ...withoutTarget,
         {
           slot,
-          productId: product.id,
+          productId: product.productId,
+          design: product.design,
+          imageIndex: product.imageIndex,
           variantId: product.variantId!,
           title: product.title,
           source: "product",
@@ -497,10 +522,15 @@ const CustomWallTemplate = ({
               return item
             }
 
-            const payload = await uploadCustomImage(item.file)
+            const payload = await uploadCustomImage(
+              item.file,
+              item.crop,
+              "hexagon"
+            )
             return {
               ...item,
               remoteUrl: payload.url,
+              croppedUrl: payload.cropped_url,
               originalFilename: payload.filename ?? item.originalFilename,
             }
           })
@@ -515,6 +545,10 @@ const CustomWallTemplate = ({
                 source: "product",
                 variantId: item.variantId,
                 quantity: 1,
+                selectedDesignId: item.design?.id,
+                selectedImageIndex: item.imageIndex,
+                imageUrl: item.imageUrl,
+                displayTitle: item.title,
               }
             }
 
@@ -523,6 +557,7 @@ const CustomWallTemplate = ({
               variantId: item.variantId,
               quantity: 1,
               imageUrl: item.remoteUrl,
+              croppedImageUrl: item.croppedUrl,
               originalFilename: item.originalFilename,
               wallSlot: item.slot,
               crop: item.crop,
@@ -716,11 +751,11 @@ const CustomWallTemplate = ({
                         size={WALL_SLOT_HEIGHT}
                       />
                     ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={pointerDragItem.imageUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
+                      <DesignArtwork
+                        url={pointerDragItem.imageUrl}
+                        title={pointerDragItem.title}
+                        design={pointerDragItem.design}
+                        fill
                       />
                     )}
                   </div>
@@ -834,7 +869,7 @@ const CustomCropSquareImage = ({
       style={{
         height: size,
         transform: "translate(-50%, -50%)",
-        width: size,
+        width: (size * CROP_FRAME_WIDTH) / CROP_FRAME_HEIGHT,
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -881,12 +916,11 @@ const ProductPickerCard = ({
         style={{ clipPath: hexClipPath }}
       >
         {product.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.imageUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
+          <DesignArtwork
+            url={product.imageUrl}
+            title={product.title}
+            design={product.design}
+            fill
           />
         ) : (
           <div className="h-full w-full bg-ui-bg-subtle" />
@@ -908,7 +942,7 @@ const ProductPickerCard = ({
       </button>
       {product.handle && (
         <LocalizedClientLink
-          href={`/products/${product.handle}`}
+          href={product.href ?? `/products/${product.handle}`}
           className="mt-2 block text-center text-xs text-ui-fg-subtle underline transition-colors hover:text-ui-fg-base"
         >
           View details
@@ -1006,12 +1040,11 @@ const WallSlot = ({
             size={WALL_SLOT_HEIGHT}
           />
         ) : item?.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.imageUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            draggable={false}
+          <DesignArtwork
+            url={item.imageUrl}
+            title={item.title}
+            design={item.design}
+            fill
           />
         ) : (
           <div
@@ -1059,12 +1092,13 @@ const WallSlot = ({
 function toProductOption(product: HttpTypes.StoreProduct): ProductOption {
   const variant = pickVariant(product)
   const price = variant
-    ? getProductPrice({ product, variantId: variant.id }).variantPrice ??
-      getProductPrice({ product }).cheapestPrice
+    ? (getProductPrice({ product, variantId: variant.id }).variantPrice ??
+      getProductPrice({ product }).cheapestPrice)
     : null
 
   return {
     id: product.id!,
+    productId: product.id!,
     title: product.title ?? "Untitled product",
     handle: product.handle,
     thumbnail: product.thumbnail,

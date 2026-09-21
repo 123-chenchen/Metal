@@ -8,7 +8,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import ShoppingBag from "@modules/common/icons/shopping-bag"
 import UserCircle from "@modules/common/icons/user-circle"
 import CartButton from "@modules/layout/components/cart-button"
-import MegaMenuServer, {
+import {
   getExploreMegaMenuSections,
 } from "@modules/layout/components/mega-menu"
 import MegaMenu from "@modules/layout/components/mega-menu/mega-menu"
@@ -86,13 +86,11 @@ export default async function Nav() {
                   Store
                 </LocalizedClientLink>
               </div>
-              <div className="hidden small:flex h-full">
-                <Suspense
-                  fallback={<span className="h-full flex items-center">Explore</span>}
-                >
-                  <MegaMenuServer />
-                </Suspense>
-              </div>
+              {exploreSections.map((section) => (
+                <div key={section.title} className="hidden small:flex h-full">
+                  <MegaMenu sections={[section]} triggerLabel={section.title} />
+                </div>
+              ))}
               <div className="hidden small:flex h-full">
                 <MegaMenu sections={CUSTOM_MENU_SECTIONS} triggerLabel="Custom" />
               </div>

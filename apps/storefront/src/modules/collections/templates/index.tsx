@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 
+import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import CollectionFilterBar from "@modules/store/components/collection-filter-bar"
@@ -14,21 +15,24 @@ export default async function CollectionTemplate({
   page,
   countryCode,
   optionValueIds,
+  categoryId,
 }: {
   sortBy?: SortOptions
   collection: HttpTypes.StoreCollection
   page?: string
   countryCode: string
+  categoryId?: string
   optionValueIds?: OptionValueIds
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
-  const { collections } = await listCollections()
+  const [{ collections }, categories] = await Promise.all([listCollections(), listCategories()])
 
   return (
     <>
-      <CollectionFilterBar sortBy={sort} collections={collections} hideOptionsPicker />
+      <CollectionFilterBar sortBy={sort} collections={collections} categories={categories} collectionId={collection.id} categoryId={categoryId} hideOptionsPicker />
       <div className="py-6 content-container-wide">
+        <h1 className="mb-8 text-2xl-semi">{collection.title}</h1>
         <Suspense
           fallback={
             <SkeletonProductGrid
@@ -40,6 +44,7 @@ export default async function CollectionTemplate({
             sortBy={sort}
             page={pageNumber}
             collectionId={collection.id}
+            categoryId={categoryId}
             countryCode={countryCode}
             optionValueIds={optionValueIds}
           />

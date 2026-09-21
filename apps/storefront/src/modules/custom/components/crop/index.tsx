@@ -88,24 +88,25 @@ export function clampCrop(crop: CustomCrop): CustomCrop {
 
 export function buildCropImageStyle(
   crop?: CustomCrop,
-  frame = {
+  _frame = {
     height: CROP_FRAME_HEIGHT,
     width: CROP_FRAME_WIDTH,
   }
 ) {
   const normalized = clampCrop(crop ?? getDefaultCrop())
-  const baseSize = getFrameCoverSize(normalized.imageRatio, frame)
-  const scaleX = frame.width / CROP_FRAME_WIDTH
-  const scaleY = frame.height / CROP_FRAME_HEIGHT
+  // Preserve the confirmed crop at every preview size. Recalculating cover
+  // against a thumbnail or responsive frame would select a different region.
+  const baseSize = getFrameCoverSize(normalized.imageRatio, {
+    width: CROP_FRAME_WIDTH,
+    height: CROP_FRAME_HEIGHT,
+  })
 
   return {
-    height: `${baseSize.height}px`,
-    transform: `translate(calc(-50% + ${
-      normalized.offsetX * scaleX
-    }px), calc(-50% + ${normalized.offsetY * scaleY}px)) scale(${
-      normalized.zoom
-    })`,
-    width: `${baseSize.width}px`,
+    height: `${(baseSize.height / CROP_FRAME_HEIGHT) * 100}%`,
+    left: `${50 + (normalized.offsetX / CROP_FRAME_WIDTH) * 100}%`,
+    top: `${50 + (normalized.offsetY / CROP_FRAME_HEIGHT) * 100}%`,
+    transform: `translate(-50%, -50%) scale(${normalized.zoom})`,
+    width: `${(baseSize.width / CROP_FRAME_WIDTH) * 100}%`,
   }
 }
 

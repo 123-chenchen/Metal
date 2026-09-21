@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Thumbnail from "@modules/products/components/thumbnail"
+import DesignArtwork from "@modules/products/components/design-artwork"
+import { designHref } from "@lib/util/designs"
 import WishlistToggleButton from "@modules/common/components/wishlist-toggle-button"
 import type { FlatProductImageCard } from "@lib/util/flatten-product-images"
 
@@ -15,16 +16,19 @@ export default async function ProductImageCard({
 
   return (
     <LocalizedClientLink
-      href={`/products/${product.handle}?img=${imageIndex}`}
+      href={designHref(product, card.design?.id, imageIndex)}
       className="group block"
     >
       <div className="relative" data-testid="product-image-card-wrapper">
         <WishlistToggleButton
           productId={product.id}
           imageIndex={imageIndex}
+          designId={card.design?.id}
           className="absolute right-2 top-2 z-10"
         />
-        <Thumbnail thumbnail={image.url} size="auto" bare />
+        <div className="aspect-[4/5] w-full bg-ui-bg-subtle p-3 flex items-center justify-center overflow-hidden">
+          <DesignArtwork url={image.url} title={designName} design={card.design} />
+        </div>
         <p
           className="mt-2 truncate txt-compact-medium text-ui-fg-subtle"
           data-testid="product-title"

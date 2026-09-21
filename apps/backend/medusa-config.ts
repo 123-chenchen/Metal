@@ -2,6 +2,38 @@ import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
+const hasS3FileConfig = [
+  process.env.S3_FILE_URL,
+  process.env.S3_ACCESS_KEY_ID,
+  process.env.S3_SECRET_ACCESS_KEY,
+  process.env.S3_BUCKET,
+  process.env.S3_ENDPOINT,
+].every(Boolean)
+
+const fileProvider =
+  (process.env.NODE_ENV === "development" && !hasS3FileConfig) || process.env.NODE_ENV === "test"
+    ? {
+        resolve: "@medusajs/medusa/file-local",
+        id: "local",
+        options: {
+          upload_dir: "static",
+          backend_url: "http://localhost:9000/static",
+        },
+      }
+    : {
+        resolve: "@medusajs/medusa/file-s3",
+        id: "r2",
+        options: {
+          file_url: process.env.S3_FILE_URL,
+          access_key_id: process.env.S3_ACCESS_KEY_ID,
+          secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+          region: process.env.S3_REGION || "auto",
+          bucket: process.env.S3_BUCKET,
+          endpoint: process.env.S3_ENDPOINT,
+          prefix: "products",
+        },
+      }
+
 module.exports = defineConfig({
   admin: {
     disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
@@ -102,6 +134,9 @@ module.exports = defineConfig({
 
   modules: [
     {
+      resolve: "./src/modules/design",
+    },
+    {
       resolve: "./src/modules/home-content",
     },
     {
@@ -110,21 +145,7 @@ module.exports = defineConfig({
     {
       resolve: "@medusajs/medusa/file",
       options: {
-        providers: [
-          {
-            resolve: "@medusajs/medusa/file-s3",
-            id: "r2",
-            options: {
-              file_url: process.env.S3_FILE_URL,
-              access_key_id: process.env.S3_ACCESS_KEY_ID,
-              secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
-              region: process.env.S3_REGION || "auto",
-              bucket: process.env.S3_BUCKET,
-              endpoint: process.env.S3_ENDPOINT,
-              prefix: "products",
-            },
-          },
-        ],
+        providers: [fileProvider],
       },
     },
     {

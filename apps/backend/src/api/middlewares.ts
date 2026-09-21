@@ -1,8 +1,19 @@
 import { authenticate, defineMiddlewares } from "@medusajs/framework/http"
 import { preventDuplicateProductCreate } from "./admin/products/prevent-duplicate-create"
+import { removeProductOptionsSafely } from "./admin/products/remove-options"
+import { validateDesignCartItem, preventDesignSnapshotEdit, validateCartDesignAvailability } from "./store/design-cart-middleware"
 
 export default defineMiddlewares({
   routes: [
+    { matcher: "/admin/products/:id/options/batch", methods: ["POST"], middlewares: [authenticate("user", ["session", "bearer", "api-key"]), removeProductOptionsSafely] },
+    { matcher: "/store/carts/:id/line-items", methods: ["POST"], middlewares: [validateDesignCartItem] },
+    { matcher: "/store/carts/:id/line-items/:line_id", methods: ["POST"], middlewares: [preventDesignSnapshotEdit] },
+    { matcher: "/store/carts/:id/complete", methods: ["POST"], middlewares: [validateCartDesignAvailability] },
+    {
+      matcher: "/admin/products/:id/designs",
+      methods: ["POST"],
+      bodyParser: { sizeLimit: "12mb" },
+    },
     {
       matcher: "/admin/products",
       methods: ["POST"],

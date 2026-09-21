@@ -53,13 +53,21 @@ export default function ProductActions({
   const isWishlisted = checkWishlisted(product.id, wishlistImageIndex)
   const countryCode = useParams().countryCode as string
 
-  // If there is only 1 variant, preselect the options
+  // Preselect singleton options, including the internal Default option.
   useEffect(() => {
     if (product.variants?.length === 1) {
       const variantOptions = optionsAsKeymap(product.variants[0].options)
       setOptions(variantOptions ?? {})
+    } else {
+      setOptions((previous) => {
+        const next = { ...previous }
+        for (const option of product.options ?? []) {
+          if (option.values?.length === 1) next[option.id] = option.values[0].value
+        }
+        return isEqual(previous, next) ? previous : next
+      })
     }
-  }, [product.variants])
+  }, [product.variants, product.options])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -103,7 +111,7 @@ export default function ProductActions({
     }
 
     router.replace(pathname + "?" + params.toString())
-  }, [selectedVariant, isValidVariant])
+  }, [selectedVariant?.id, isValidVariant, pathname, router, searchParams])
 
   const actionsRef = useRef<HTMLDivElement>(null)
 
@@ -112,7 +120,7 @@ export default function ProductActions({
   const addSelectedVariantToCart = async () => {
     if (!selectedVariant?.id) return false
 
-    const image = selectedImage ?? {
+    const image: SelectedImage = selectedImage ?? {
       url: product.thumbnail ?? product.images?.[0]?.url ?? "",
       index: 1,
       designName: `${product.title} 1`,
@@ -123,6 +131,7 @@ export default function ProductActions({
       quantity: 1,
       countryCode,
       metadata: {
+        ...(image.designId ? { selected_design_id: image.designId } : {}),
         selected_image_url: image.url,
         selected_image_index: image.index,
         selected_design_name: image.designName,
@@ -166,7 +175,7 @@ export default function ProductActions({
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
         <div>
-          {(product.variants?.length ?? 0) > 1 && (
+          {!!product.options?.length && (
             <div className="flex flex-col gap-y-4">
               {(product.options || []).map((option) => {
                 return (

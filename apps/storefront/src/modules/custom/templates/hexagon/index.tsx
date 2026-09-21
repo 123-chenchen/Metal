@@ -10,6 +10,8 @@ import HexagonProduct3DView from "@modules/custom/components/hexagon-3d-view"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import {
   buildCropImageStyle,
+  CROP_FRAME_WIDTH,
+  CROP_FRAME_HEIGHT,
   clampCrop,
   CustomCrop,
   CustomCropModal,
@@ -27,6 +29,7 @@ type UploadedCustomImage = {
   // Set only once this image has actually been uploaded to cloud storage,
   // which happens lazily at "Add to cart" time rather than at crop-confirm,
   // so previewing/demoing designs never writes to storage.
+  croppedUrl?: string
   remoteUrl?: string
   file: File
   filename: string
@@ -47,7 +50,7 @@ type AddItemsToCartAction = (input: {
 const HEX_CLIP_PATH =
   "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
 const PREVIEW_HEX_WIDTH = 510
-const PREVIEW_HEX_HEIGHT = 594
+const PREVIEW_HEX_HEIGHT = (PREVIEW_HEX_WIDTH * CROP_FRAME_HEIGHT) / CROP_FRAME_WIDTH
 // Mirrors the backend's own cap (apps/backend/src/api/store/custom/uploads/route.ts)
 // so oversized files are rejected here instead of tripping the JSON body-size
 // limit server-side, whose error response the browser can't surface (no CORS
@@ -198,10 +201,11 @@ const HexagonCustomTemplate = ({
               return image
             }
 
-            const payload = await uploadCustomImage(image.file)
+            const payload = await uploadCustomImage(image.file, image.crop, "hexagon")
             return {
               ...image,
               remoteUrl: payload.url,
+              croppedUrl: payload.cropped_url,
               filename: payload.filename ?? image.filename,
             }
           })
@@ -219,6 +223,7 @@ const HexagonCustomTemplate = ({
             productTitle: product.title,
             customItemIndex: index + 1,
             imageUrl: image.remoteUrl,
+            croppedImageUrl: image.croppedUrl,
             originalFilename: image.filename,
             crop: image.crop,
           })),
@@ -281,7 +286,7 @@ const HexagonCustomTemplate = ({
                 onClick={() => setViewMode("spin")}
                 disabled={!activeImage}
                 className={clx(
-                  "grid h-[78px] w-[64px] shrink-0 place-items-center border text-[11px] font-semibold tracking-wide transition-colors",
+                  "grid h-[78px] w-[68px] shrink-0 place-items-center border text-[11px] font-semibold tracking-wide transition-colors",
                   viewMode === "spin"
                     ? "border-ui-fg-interactive bg-ui-bg-base text-ui-fg-interactive"
                     : "border-ui-border-base bg-ui-bg-subtle text-ui-fg-muted hover:text-ui-fg-base",
@@ -307,7 +312,7 @@ const HexagonCustomTemplate = ({
                     className="relative grid place-items-center overflow-hidden bg-ui-bg-base"
                     style={{
                       clipPath: HEX_CLIP_PATH,
-                      height: "min(72vw, 594px)",
+                      aspectRatio: CROP_FRAME_WIDTH / CROP_FRAME_HEIGHT,
                       maxHeight: PREVIEW_HEX_HEIGHT,
                       maxWidth: PREVIEW_HEX_WIDTH,
                       width: "min(62vw, 510px)",
@@ -455,7 +460,7 @@ const PreviewThumb = ({
   return (
     <div
       className={clx(
-        "group relative h-[78px] w-[64px] shrink-0 bg-ui-bg-subtle transition-transform hover:scale-[1.02]",
+        "group relative h-[78px] w-[68px] shrink-0 bg-ui-bg-subtle transition-transform hover:scale-[1.02]",
         {
           "ring-2 ring-ui-fg-interactive ring-offset-2": isActive,
         }

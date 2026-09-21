@@ -7,10 +7,11 @@ import { SelectedImage } from "@lib/util/flatten-product-images"
 import ProductTemplate from "@modules/products/templates"
 import { GalleryImage } from "@modules/products/components/image-gallery"
 import { HttpTypes, StoreCartShippingOption } from "@medusajs/types"
+import { productDesigns, resolveDesign } from "@lib/util/designs"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
-  searchParams: Promise<{ v_id?: string; img?: string }>
+  searchParams: Promise<{ v_id?: string; img?: string; design?: string }>
 }
 
 // retrieveCart() reads the cart cookie (via next/headers), which conflicts
@@ -137,13 +138,16 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const search = await props.searchParams
+  const design = resolveDesign(product, search.design, search.img)
+  const title = design?.title ?? product.title
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
+    title,
+    description: product.description ?? title,
     openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
-      images: product.thumbnail ? [product.thumbnail] : [],
+      title,
+      description: product.description ?? title,
+      images: design ? [design.artwork_url] : product.thumbnail ? [product.thumbnail] : [],
     },
   }
 }
@@ -169,11 +173,20 @@ export default async function ProductPage(props: Props) {
   }
 
   const variantImages = getImagesForVariant(pricedProduct, selectedVariantId)
-  const { images, selectedImage } = resolveSelectedImage(
+  let { images, selectedImage } = resolveSelectedImage(
     pricedProduct,
     variantImages,
     searchParams.img
   )
+  const design = resolveDesign(pricedProduct, searchParams.design, searchParams.img)
+  if ((productDesigns(pricedProduct).length || searchParams.design) && !design) notFound()
+  if (design) {
+    images = [
+      { id: design.id, url: design.artwork_url, index: design.sequence },
+      ...(design.gallery?.images ?? []).map((image) => ({ ...image, index: design.sequence })),
+    ]
+    selectedImage = { designId: design.id, url: design.artwork_url, index: design.sequence, designName: design.title }
+  }
 
   const cart = await retrieveCart()
   let shippingOptions: StoreCartShippingOption[] = []
@@ -190,6 +203,7 @@ export default async function ProductPage(props: Props) {
       countryCode={params.countryCode}
       images={images}
       selectedImage={selectedImage}
+      design={design ?? undefined}
       cart={cart}
       shippingOptions={shippingOptions}
     />

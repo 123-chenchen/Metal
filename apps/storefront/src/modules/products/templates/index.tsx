@@ -13,6 +13,7 @@ import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-relat
 import { notFound } from "next/navigation"
 import { HttpTypes, StoreCartShippingOption } from "@medusajs/types"
 import { flattenProductImages, SelectedImage } from "@lib/util/flatten-product-images"
+import { ProductDesign } from "@lib/util/designs"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -22,6 +23,7 @@ type ProductTemplateProps = {
   countryCode: string
   images: GalleryImage[]
   selectedImage: SelectedImage | null
+  design?: ProductDesign
   cart: HttpTypes.StoreCart | null
   shippingOptions: StoreCartShippingOption[]
 }
@@ -32,6 +34,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   countryCode,
   images,
   selectedImage,
+  design,
   cart,
   shippingOptions,
 }) => {
@@ -51,7 +54,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   // The other designs/images of this product surface as their own cards in
   // "You might also want to check out these products" below, so the PDP
   // gallery itself only ever needs to show the one currently selected image.
-  const galleryImages = images.filter((image) => image.id === activeImageId)
+  const galleryImages = design ? images : images.filter((image) => image.id === activeImageId)
 
   return (
     <>
@@ -67,12 +70,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               images={galleryImages}
               activeId={activeImageId}
               productHandle={product.handle ?? ""}
+              design={design}
             />
           </div>
 
           <div className="flex w-full small:w-1/2 flex-col gap-y-6">
             <ProductOnboardingCta />
-            <ProductInfo product={product} />
+            <ProductInfo product={{ ...product, title: selectedImage?.designName ?? product.title }} />
             <Suspense
               fallback={
                 <ProductActions

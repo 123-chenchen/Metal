@@ -7,6 +7,7 @@ import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 import { getRegion, retrieveRegion } from "./regions"
+import { flattenProductImages } from "@lib/util/flatten-product-images"
 
 type ProductListQueryParams = (HttpTypes.FindParams &
   HttpTypes.StoreProductListParams) & {
@@ -75,7 +76,7 @@ export const listProducts = async ({
           offset,
           region_id: region?.id,
           fields:
-            "*variants.calculated_price,*variants.images,*variants.options,+metadata,+tags,",
+            "*options,*options.values,*variants.calculated_price,*variants.images,*variants.options,+metadata,+tags,+design.id,+design.product_id,+design.sequence,+design.title,+design.handle,+design.active,+design.archived,+design.legacy_index,+design.artwork_url,+design.shape,+design.crop,+design.gallery,+design.created_at",
           ...queryParams,
         },
         headers,
@@ -95,6 +96,33 @@ export const listProducts = async ({
         queryParams,
       }
     })
+}
+
+// Paginate designs after native Medusa product filters/pricing. Fetch every
+// matching product page; the old implementation silently stopped at 100.
+export async function listDesignCards({ page = 1, queryParams, sortBy = "created_at", countryCode, optionValueIds }: {
+  page?: number
+  queryParams?: ProductListQueryParams
+  sortBy?: SortOptions
+  countryCode: string
+  optionValueIds?: OptionValueIds
+}) {
+  const { q, limit = 12, ...filters } = queryParams ?? {}
+  const products: HttpTypes.StoreProduct[] = []
+  for (let parentPage = 1; ; parentPage += 1) {
+    const result = await listProducts({ countryCode, pageParam: parentPage, queryParams: {
+      ...filters, order: "id", limit: 100,
+      ...(optionValueIds?.length ? { option_value_id: optionValueIds } : {}),
+    } })
+    products.push(...result.response.products)
+    if (!result.nextPage || !result.response.products.length) break
+  }
+  const search = q?.trim().toLocaleLowerCase()
+  const cards = flattenProductImages(sortProducts(products, sortBy)).filter((card) => !search ||
+    `${card.designName} ${card.product.title}`.toLocaleLowerCase().includes(search))
+  if (sortBy === "created_at") cards.sort((a, b) =>
+    new Date(b.design?.created_at ?? b.product.created_at!).getTime() - new Date(a.design?.created_at ?? a.product.created_at!).getTime() || a.image.id.localeCompare(b.image.id))
+  return { cards: cards.slice((Math.max(1, page) - 1) * limit, Math.max(1, page) * limit), count: cards.length }
 }
 
 /**

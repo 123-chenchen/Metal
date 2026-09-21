@@ -14,7 +14,11 @@ type MobileNavProps = {
 
 const MobileNav = ({ exploreSections, customSections }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const close = () => setIsOpen(false)
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const close = () => {
+    setIsOpen(false)
+    setExpandedSection(null)
+  }
 
   useEffect(() => {
     if (!isOpen) {
@@ -37,24 +41,25 @@ const MobileNav = ({ exploreSections, customSections }: MobileNavProps) => {
     <>
       <button
         type="button"
-        className="small:hidden flex flex-col leading-[0.85] gap-1"
+        className="small:hidden flex h-11 w-11 shrink-0 items-center justify-center text-metal-cream hover:text-metal-gold"
         onClick={() => setIsOpen(true)}
         aria-label="Open menu"
         aria-expanded={isOpen}
+        aria-controls="mobile-navigation"
         data-testid="mobile-menu-trigger"
       >
-        <span
-          className="font-display text-xl text-metal-cream tracking-wide"
-          style={{
-            textShadow:
-              "0 0 14px rgba(244,196,48,0.55), 0 0 2px rgba(244,196,48,0.8)",
-          }}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden="true"
         >
-          HexMetal
-        </span>
-        <span className="font-brand text-metal-gold text-xs tracking-[0.5em] pl-px">
-          POSTER
-        </span>
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
 
       <div
@@ -67,6 +72,9 @@ const MobileNav = ({ exploreSections, customSections }: MobileNavProps) => {
       />
 
       <aside
+        id="mobile-navigation"
+        aria-label="Mobile navigation"
+        inert={!isOpen}
         className={clsx(
           "fixed inset-y-0 left-0 z-[81] w-[80vw] max-w-[320px] transition-transform duration-300 ease-in-out small:hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -105,12 +113,45 @@ const MobileNav = ({ exploreSections, customSections }: MobileNavProps) => {
               </LocalizedClientLink>
             </div>
 
-            {sections.map((section) => (
+            {sections.map((section, index) => (
               <div key={section.title} className="flex flex-col gap-3">
-                <span className="txt-compact-small-plus text-metal-gold font-mono-brand uppercase tracking-wide">
+                <button
+                  type="button"
+                  className="flex min-h-11 w-full items-center justify-between gap-3 text-left txt-compact-small-plus text-metal-gold font-mono-brand uppercase tracking-wide"
+                  aria-expanded={expandedSection === section.title}
+                  aria-controls={`mobile-nav-section-${index}`}
+                  onClick={() =>
+                    setExpandedSection((current) =>
+                      current === section.title ? null : section.title
+                    )
+                  }
+                >
                   {section.title}
-                </span>
-                <ul className="flex flex-col gap-3">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className={clsx(
+                      "shrink-0 transition-transform",
+                      expandedSection === section.title && "rotate-180"
+                    )}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+                <ul
+                  id={`mobile-nav-section-${index}`}
+                  className={clsx(
+                    "flex-col gap-3 pl-3",
+                    expandedSection === section.title ? "flex" : "hidden"
+                  )}
+                >
                   {section.links.map((link) => (
                     <li key={link.href}>
                       <LocalizedClientLink

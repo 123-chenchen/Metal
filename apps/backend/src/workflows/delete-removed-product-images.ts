@@ -11,6 +11,8 @@ import {
   ProductImageRecord,
   ProductImageWriteService,
 } from "../lib/product-image-storage"
+import { DESIGN_MODULE } from "../modules/design"
+import DesignModuleService from "../modules/design/service"
 
 export type DeleteRemovedProductImagesInput = {
   productIds: string[]
@@ -116,6 +118,9 @@ const deleteRemovedProductImagesStep = createStep(
     const keysToDelete: string[] = []
 
     for (const url of uniqueUrls) {
+      const designService = container.resolve<DesignModuleService>(DESIGN_MODULE)
+      const retained = await designService.listDesignAssets({ url }, { take: 1 })
+      if (retained.length) continue
       const fileKey = deriveFileKey(url, fileBaseUrl)
       if (!fileKey) {
         // Not hosted by the configured storage provider (e.g. an external

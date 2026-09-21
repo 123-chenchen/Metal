@@ -1,7 +1,6 @@
 "use server"
 
 import { sdk } from "@lib/config"
-import { getCacheOptions } from "./cookies"
 
 export type HomeHeroContent = {
   id: string
@@ -27,21 +26,35 @@ export type HomePromoBarContent = {
 }
 
 export type HomeContentResponse = {
+  hero_config: HomeHeroConfig
   hero_slides: HomeHeroContent[]
   grid_items: HomeGridItemContent[]
   promo_bar: HomePromoBarContent | null
 }
 
-export const getHomeContent = async (): Promise<HomeContentResponse | null> => {
-  const next = {
-    ...(await getCacheOptions("home_content")),
-    revalidate: 60,
-  }
+export type HomeHeroSlide = {
+  media_aspect_ratio?: "16 / 9" | "4 / 3" | "1 / 1" | "21 / 9"
+  id: string
+  media_type: "image" | "video"
+  media_url: string
+  media_object_position: string
+  link_url: string
+}
 
+export type HomeHeroConfig = {
+  media_aspect_ratio:
+    "auto" | "16 / 9" | "4 / 3" | "1 / 1" | "21 / 9" | "custom"
+  width: number
+  height: number
+  slide_interval_seconds: number
+  media_slides: HomeHeroSlide[]
+}
+
+export const getHomeContent = async (): Promise<HomeContentResponse | null> => {
   return sdk.client
     .fetch<HomeContentResponse>(`/store/home-content`, {
       method: "GET",
-      next,
+      cache: "no-store",
     })
     .catch(() => null)
 }

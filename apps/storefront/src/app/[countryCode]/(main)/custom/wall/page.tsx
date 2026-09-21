@@ -34,7 +34,7 @@ export default async function CustomWallPage(props: CustomWallPageProps) {
       queryParams: {
         limit: 100,
         fields:
-          "*variants.calculated_price,*variants.images,*variants.options,+metadata,+tags,*images",
+          "*variants.calculated_price,*variants.images,*variants.options,+metadata,+tags,*images,+design.id,+design.product_id,+design.sequence,+design.title,+design.handle,+design.active,+design.archived,+design.legacy_index,+design.artwork_url,+design.shape,+design.crop,+design.gallery",
       },
     }),
     listCollections({ limit: "100" }).catch(() => ({

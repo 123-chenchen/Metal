@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
-import { addToCartWorkflow } from "@medusajs/medusa/core-flows"
+import { addCustomCartItemsWorkflow } from "../../../../workflows/add-custom-cart-items"
 
 type CustomCrop = {
   offsetX?: unknown
@@ -10,9 +10,12 @@ type CustomCrop = {
 }
 
 type CustomCartItemPayload = {
+  selected_design_id?: unknown
+  selected_image_index?: unknown
   source?: unknown
   variant_id?: unknown
   quantity?: unknown
+  cropped_image_url?: unknown
   image_url?: unknown
   original_filename?: unknown
   wall_slot?: unknown
@@ -54,7 +57,7 @@ export async function POST(
     )
   }
 
-  await addToCartWorkflow(req.scope).run({
+  await addCustomCartItemsWorkflow(req.scope).run({
     input: {
       cart_id: cartId,
       items,
@@ -67,7 +70,7 @@ export async function POST(
 function normalizeCartItems(
   payloadItems: CustomCartItemPayload[]
 ): NormalizedCartItem[] {
-  const productQuantities = new Map<string, number>()
+  const productItems = new Map<string, NormalizedCartItem>()
   const customItems: NormalizedCartItem[] = []
 
   for (const payloadItem of payloadItems) {
@@ -82,10 +85,28 @@ function normalizeCartItems(
     }
 
     if (source === "product") {
-      productQuantities.set(
-        variantId,
-        (productQuantities.get(variantId) ?? 0) + quantity
+      const designId = getString(payloadItem.selected_design_id)
+      const imageIndex = Math.floor(
+        Number(payloadItem.selected_image_index) || 0
       )
+      const metadata =
+        designId || imageIndex > 0
+          ? {
+              ...(designId ? { selected_design_id: designId } : {}),
+              selected_image_index: imageIndex,
+              selected_image_url: getString(payloadItem.image_url),
+              selected_design_name: getString(payloadItem.display_title),
+            }
+          : undefined
+      const key = JSON.stringify([variantId, designId || imageIndex])
+      const existing = productItems.get(key)
+      if (existing) existing.quantity += quantity
+      else
+        productItems.set(key, {
+          variant_id: variantId,
+          quantity,
+          ...(metadata ? { metadata } : {}),
+        })
       continue
     }
 
@@ -96,13 +117,7 @@ function normalizeCartItems(
     })
   }
 
-  return [
-    ...Array.from(productQuantities.entries()).map(([variantId, quantity]) => ({
-      variant_id: variantId,
-      quantity,
-    })),
-    ...customItems,
-  ]
+  return [...productItems.values(), ...customItems]
 }
 
 function buildCustomMetadata(
@@ -123,6 +138,7 @@ function buildCustomMetadata(
       custom_price_carrier_product_title: getString(payloadItem.product_title),
       custom_item_index: Number(payloadItem.custom_item_index) || 1,
       custom_image_url: imageUrl,
+      custom_cropped_image_url: getString(payloadItem.cropped_image_url),
       custom_original_filename: originalFilename,
       custom_crop: crop,
     }
@@ -132,6 +148,7 @@ function buildCustomMetadata(
     custom_source: "custom_wall",
     custom_type: "hexagon_poster",
     custom_image_url: imageUrl,
+    custom_cropped_image_url: getString(payloadItem.cropped_image_url),
     custom_original_filename: originalFilename,
     custom_wall_slot: Number(payloadItem.wall_slot) || 0,
     custom_crop: crop,

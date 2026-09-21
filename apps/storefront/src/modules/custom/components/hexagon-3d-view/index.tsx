@@ -15,16 +15,11 @@ type HexagonProduct3DViewProps = {
   alt?: string
 }
 
-// Real hex frame: 18cm wide (point-to-point) x 15.6cm tall (flat-to-flat),
-// 9cm sides — a true regular hexagon, points left/right, flat top/bottom.
-// For a regular hexagon, flat-to-flat height = point-to-point width * sqrt(3)/2.
-const HEX_ASPECT = Math.sqrt(3) / 2
+// Same upright hexagon as the crop editor and saved PNG.
+const HEX_ASPECT = 390 / 340
 const HEX_CLIP_PATH =
-  "polygon(100% 50%, 75% 0%, 25% 0%, 0% 50%, 25% 100%, 75% 100%)"
-
-// Outward-facing normal angle (degrees, 0=right/+X, 90=down/+Y) for each of
-// the hexagon's 6 edges, evenly spaced every 60 degrees starting at the top.
-const SIDE_FACE_ANGLES = [-90, -30, 30, 90, 150, 210]
+  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+const HEX_POINTS = [[0.5, 0], [1, 0.25], [1, 0.75], [0.5, 1], [0, 0.75], [0, 0.25]]
 const SIDE_FACE_SHADES: [string, string][] = [
   ["#55524a", "#1c1b17"],
   ["#46443e", "#17160f"],
@@ -153,8 +148,6 @@ const HexagonProduct3DView = ({
     boxWidth = boxHeight / HEX_ASPECT
   }
   const depth = Math.max(3, Math.min(7, boxWidth * 0.0075))
-  const sideLength = boxWidth / 2
-  const apothem = boxHeight / 2
 
   return (
     <div ref={stageRef} className="relative w-full bg-black">
@@ -222,17 +215,23 @@ const HexagonProduct3DView = ({
               }}
             />
 
-            {/* the 6 rim faces, one per hex edge, evenly spaced 60deg apart */}
-            {SIDE_FACE_ANGLES.map((angle, index) => {
+            {/* Derive each rim from the same polygon as the front face. */}
+            {HEX_POINTS.map(([x, y], index) => {
+              const [nextX, nextY] = HEX_POINTS[(index + 1) % HEX_POINTS.length]
+              const dx = (nextX - x) * boxWidth
+              const dy = (nextY - y) * boxHeight
+              const angle = Math.atan2(dy, dx) * 180 / Math.PI
+              const centerX = ((x + nextX) / 2 - 0.5) * boxWidth
+              const centerY = ((y + nextY) / 2 - 0.5) * boxHeight
               const [from, to] = SIDE_FACE_SHADES[index]
               return (
                 <div
                   key={angle}
                   style={{
                     ...faceStyle(
-                      sideLength,
+                      Math.hypot(dx, dy),
                       depth,
-                      `rotateZ(${angle + 90}deg) rotateX(90deg) translateZ(${apothem}px)`
+                      `translateX(${centerX}px) translateY(${centerY}px) rotateZ(${angle}deg) rotateX(90deg)`
                     ),
                     background: `linear-gradient(90deg, ${from}, ${to})`,
                   }}

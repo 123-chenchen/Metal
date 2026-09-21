@@ -9,6 +9,7 @@ const WISHLIST_EVENT = "wishlist:change"
 export type WishlistEntry = {
   product_id: string
   image_index: number
+  design_id?: string | null
 }
 
 function getGuestId(): string {
@@ -25,8 +26,8 @@ function getGuestId(): string {
   return id
 }
 
-function entryKey(productId: string, imageIndex: number) {
-  return `${productId}:${imageIndex}`
+function entryKey(productId: string, imageIndex: number, designId?: string | null) {
+  return `${productId}:${designId ?? imageIndex}`
 }
 
 let cachedEntries: WishlistEntry[] | null = null
@@ -79,26 +80,26 @@ export function useWishlist() {
   }, [refresh])
 
   const isWishlisted = useCallback(
-    (productId: string, imageIndex: number) =>
+    (productId: string, imageIndex: number, designId?: string) =>
       entries.some(
         (entry) =>
-          entry.product_id === productId && entry.image_index === imageIndex
+          entryKey(entry.product_id, entry.image_index, entry.design_id) === entryKey(productId, imageIndex, designId)
       ),
     [entries]
   )
 
-  const add = useCallback(async (productId: string, imageIndex: number) => {
+  const add = useCallback(async (productId: string, imageIndex: number, designId?: string) => {
     const previous = cachedEntries ?? []
     if (
       previous.some(
         (entry) =>
-          entry.product_id === productId && entry.image_index === imageIndex
+          entryKey(entry.product_id, entry.image_index, entry.design_id) === entryKey(productId, imageIndex, designId)
       )
     ) {
       return
     }
 
-    setCache([...previous, { product_id: productId, image_index: imageIndex }])
+    setCache([...previous, { product_id: productId, image_index: imageIndex, design_id: designId }])
 
     try {
       await sdk.client.fetch("/store/wishlist", {
@@ -106,6 +107,7 @@ export function useWishlist() {
         body: {
           product_id: productId,
           image_index: imageIndex,
+          design_id: designId,
           guest_id: getGuestId(),
         },
       })
@@ -116,14 +118,13 @@ export function useWishlist() {
   }, [])
 
   const remove = useCallback(
-    async (productId: string, imageIndex: number) => {
+    async (productId: string, imageIndex: number, designId?: string) => {
       const previous = cachedEntries ?? []
       setCache(
         previous.filter(
           (entry) =>
             !(
-              entry.product_id === productId &&
-              entry.image_index === imageIndex
+              entryKey(entry.product_id, entry.image_index, entry.design_id) === entryKey(productId, imageIndex, designId)
             )
         )
       )
@@ -131,7 +132,7 @@ export function useWishlist() {
       try {
         await sdk.client.fetch(`/store/wishlist/${productId}`, {
           method: "DELETE",
-          query: { guest_id: getGuestId(), image_index: imageIndex },
+          query: { guest_id: getGuestId(), image_index: imageIndex, design_id: designId },
         })
       } catch (error) {
         setCache(previous)
@@ -142,16 +143,16 @@ export function useWishlist() {
   )
 
   const toggle = useCallback(
-    async (productId: string, imageIndex: number) => {
-      const key = entryKey(productId, imageIndex)
+    async (productId: string, imageIndex: number, designId?: string) => {
+      const key = entryKey(productId, imageIndex, designId)
       const active = (cachedEntries ?? []).some(
-        (entry) => entryKey(entry.product_id, entry.image_index) === key
+        (entry) => entryKey(entry.product_id, entry.image_index, entry.design_id) === key
       )
 
       if (active) {
-        await remove(productId, imageIndex)
+        await remove(productId, imageIndex, designId)
       } else {
-        await add(productId, imageIndex)
+        await add(productId, imageIndex, designId)
       }
     },
     [add, remove]
