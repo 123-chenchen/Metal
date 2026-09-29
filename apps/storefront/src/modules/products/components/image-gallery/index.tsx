@@ -77,17 +77,27 @@ const ZoomableImage = ({ image }: { image: GalleryImage }) => {
 }
 
 // Supplementary gallery selection is local and never changes the purchased design.
-const ImageGallery = ({ images, activeId, productHandle, design }: ImageGalleryProps) => {
+const ImageGallery = ({
+  images,
+  activeId,
+  productHandle,
+  design,
+}: ImageGalleryProps) => {
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<"photo" | "spin">("photo")
   const [selectedId, setSelectedId] = useState(activeId)
-  useEffect(() => { setSelectedId(activeId); setViewMode("photo") }, [activeId, design?.id])
+  useEffect(() => {
+    setSelectedId(activeId)
+    setViewMode("photo")
+  }, [activeId, design?.id])
 
   if (!images.length) {
     return null
   }
 
-  const activeImage = images.find((image) => image.id === (design ? selectedId : activeId)) ?? images[0]
+  const activeImage =
+    images.find((image) => image.id === (design ? selectedId : activeId)) ??
+    images[0]
   const isPrimary = activeImage.id === images[0].id
 
   const hrefForImage = (index: number) => {
@@ -96,40 +106,75 @@ const ImageGallery = ({ images, activeId, productHandle, design }: ImageGalleryP
     return `/products/${productHandle}?${params.toString()}`
   }
 
-  return (
-    <div className="flex w-full items-start gap-4 small:flex-row flex-col-reverse">
-      <div className="flex small:flex-col gap-2.5 small:w-[84px] w-full overflow-x-auto small:overflow-visible no-scrollbar">
-        {design ? images.map((image, index) => (
-          <button type="button" key={image.id} aria-label={index === 0 ? "Primary artwork" : `Gallery image ${index}`} aria-pressed={activeImage.id === image.id && viewMode === "photo"}
-            className={clx("relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base bg-ui-bg-subtle", activeImage.id === image.id && viewMode === "photo" ? "ring-2 ring-ui-fg-interactive" : "opacity-60")}
-            onClick={() => { setSelectedId(image.id); setViewMode("photo") }}>
-            {index === 0 ? <DesignArtwork url={image.url} title={design.title} design={design} /> : <Image src={image.url} alt={`Gallery ${index}`} fill sizes="80px" className="object-cover" />}
-          </button>
-        )) : images.map((image) => (
-          <LocalizedClientLink
-            key={image.id}
-            href={hrefForImage(image.index)}
-            scroll={false}
-            onClick={() => setViewMode("photo")}
-            className={clx(
-              "relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base bg-ui-bg-subtle transition-all",
-              viewMode === "photo" && image.id === activeImage.id
-                ? "ring-2 ring-ui-fg-interactive opacity-100"
-                : "opacity-60 hover:opacity-100"
-            )}
-          >
+  const imageThumbnails = design
+    ? images.map((image, index) => (
+        <button
+          type="button"
+          key={image.id}
+          aria-label={
+            index === 0 ? "Primary artwork" : `Gallery image ${index}`
+          }
+          aria-pressed={activeImage.id === image.id && viewMode === "photo"}
+          className={clx(
+            "relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base bg-ui-bg-subtle",
+            activeImage.id === image.id && viewMode === "photo"
+              ? "ring-2 ring-ui-fg-interactive"
+              : "opacity-60"
+          )}
+          onClick={() => {
+            setSelectedId(image.id)
+            setViewMode("photo")
+          }}
+        >
+          {index === 0 ? (
+            <DesignArtwork
+              url={image.url}
+              title={design.title}
+              design={design}
+            />
+          ) : (
             <Image
               src={image.url}
-              alt=""
+              alt={`Gallery ${index}`}
               fill
               sizes="80px"
               className="object-cover"
             />
-          </LocalizedClientLink>
-        ))}
+          )}
+        </button>
+      ))
+    : images.map((image) => (
+        <LocalizedClientLink
+          key={image.id}
+          href={hrefForImage(image.index)}
+          scroll={false}
+          onClick={() => setViewMode("photo")}
+          className={clx(
+            "relative aspect-square shrink-0 w-16 small:w-full overflow-hidden rounded-base bg-ui-bg-subtle transition-all",
+            viewMode === "photo" && image.id === activeImage.id
+              ? "ring-2 ring-ui-fg-interactive opacity-100"
+              : "opacity-60 hover:opacity-100"
+          )}
+        >
+          <Image
+            src={image.url}
+            alt=""
+            fill
+            sizes="80px"
+            className="object-cover"
+          />
+        </LocalizedClientLink>
+      ))
 
-        {isPrimary && <button
+  return (
+    <div className="flex w-full items-start gap-4 small:flex-row flex-col-reverse">
+      <div className="flex small:flex-col gap-2.5 small:w-[84px] w-full overflow-x-auto small:overflow-visible no-scrollbar">
+        {imageThumbnails.slice(0, 1)}
+
+        <button
           type="button"
+          aria-label="View product in 360 degrees"
+          aria-pressed={viewMode === "spin"}
           onClick={() => setViewMode("spin")}
           className={clx(
             "relative flex aspect-square shrink-0 w-16 small:w-full items-center justify-center overflow-hidden rounded-base border border-ui-border-base bg-ui-bg-subtle text-[11px] font-semibold tracking-wide text-ui-fg-subtle transition-all",
@@ -139,14 +184,27 @@ const ImageGallery = ({ images, activeId, productHandle, design }: ImageGalleryP
           )}
         >
           360°
-        </button>}
+        </button>
+        {imageThumbnails.slice(1)}
       </div>
 
       <div className="flex-1 w-full">
         {viewMode === "photo" ? (
-          design && isPrimary ? <div className="flex justify-center items-center max-h-[65vh]"><DesignArtwork url={design.artwork_url} title={design.title} design={design} /></div> : <ZoomableImage image={activeImage} />
+          design && isPrimary ? (
+            <div className="flex justify-center items-center max-h-[65vh]">
+              <DesignArtwork
+                url={design.artwork_url}
+                title={design.title}
+                design={design}
+              />
+            </div>
+          ) : (
+            <ZoomableImage image={activeImage} />
+          )
+        ) : design ? (
+          <Design3DView design={design} />
         ) : (
-          design ? <Design3DView design={design} /> : <Product3DView imageUrl={images[0].url} />
+          <Product3DView imageUrl={images[0].url} />
         )}
       </div>
     </div>

@@ -1,12 +1,13 @@
 "use client"
 
-import { isManual, isSepay, isStripeLike } from "@lib/constants"
+import { isManual, isPaypal, isSepay, isStripeLike } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
@@ -27,6 +28,15 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const paymentSession = cart.payment_collection?.payment_sessions?.[0]
 
   switch (true) {
+    case isPaypal(paymentSession?.provider_id):
+      return (
+        <LocalizedClientLink
+          href="/checkout?step=payment"
+          className="text-ui-fg-interactive underline"
+        >
+          Return to payment to pay with PayPal
+        </LocalizedClientLink>
+      )
     case isStripeLike(paymentSession?.provider_id):
       return (
         <StripePaymentButton

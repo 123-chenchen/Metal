@@ -1,6 +1,6 @@
 "use client"
 import { RadioGroup } from "@headlessui/react"
-import { isSepay, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isPaypal, isSepay, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -8,6 +8,7 @@ import PaymentContainer, {
   StripeCardContainer,
 } from "@modules/checkout/components/payment-container"
 import SepayQrPanel from "@modules/checkout/components/sepay-qr"
+import PaypalPaymentButton from "@modules/checkout/components/payment-button/paypal-button"
 import Divider from "@modules/common/components/divider"
 import {
   Button,
@@ -46,21 +47,33 @@ const Payment = ({
   const isOpen = searchParams.get("step") === "payment"
 
   const setPaymentMethod = async (method: string) => {
+    if (isLoading) return
     setError(null)
     setSelectedPaymentMethod(method)
-    if (isStripeLike(method) || isSepay(method)) {
-      await initiatePaymentSession(cart, {
-        provider_id: method,
-      })
+    if (isStripeLike(method) || isSepay(method) || isPaypal(method)) {
+      setIsLoading(true)
+      try {
+        await initiatePaymentSession(cart, {
+          provider_id: method,
+        })
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
   const paidByGiftcard = !!(
-    (cart as unknown as Record<string, unknown>)?.gift_cards && ((cart as unknown as Record<string, unknown>)?.gift_cards as unknown[])?.length > 0 && cart?.total === 0
+    (cart as unknown as Record<string, unknown>)?.gift_cards &&
+    ((cart as unknown as Record<string, unknown>)?.gift_cards as unknown[])
+      ?.length > 0 &&
+    cart?.total === 0
   )
 
   const paymentReady =
-    (activeSession && (cart?.shipping_methods?.length ?? 0) !== 0) || paidByGiftcard
+    (activeSession && (cart?.shipping_methods?.length ?? 0) !== 0) ||
+    paidByGiftcard
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -79,6 +92,10 @@ const Payment = ({
   }
 
   const handleSubmit = async () => {
+    if (isPaypal(selectedPaymentMethod)) {
+      await setPaymentMethod(selectedPaymentMethod)
+      return
+    }
     setIsLoading(true)
     try {
       const shouldInputCard =
@@ -146,6 +163,7 @@ const Payment = ({
             <>
               <RadioGroup
                 value={selectedPaymentMethod}
+                disabled={isLoading}
                 onChange={(value: string) => setPaymentMethod(value)}
               >
                 {availablePaymentMethods.map((paymentMethod) => (
@@ -201,21 +219,54 @@ const Payment = ({
             data-testid="payment-method-error-message"
           />
 
-          <Button
-            size="large"
-            className="mt-6"
-            onClick={handleSubmit}
-            isLoading={isLoading}
-            disabled={
-              (isStripeLike(selectedPaymentMethod) && !cardComplete) ||
-              (!selectedPaymentMethod && !paidByGiftcard)
-            }
-            data-testid="submit-payment-button"
-          >
-            {!activeSession && isStripeLike(selectedPaymentMethod)
-              ? " Enter card details"
-              : "Continue to review"}
-          </Button>
+          {isOpen && !paidByGiftcard && isPaypal(selectedPaymentMethod) && (
+            <div className="mt-6" data-testid="paypal-payment-panel">
+              {isLoading ? (
+                <Text role="status">Preparing PayPal checkout...</Text>
+              ) : !error &&
+                activeSession?.provider_id === selectedPaymentMethod ? (
+                <>
+                  <Text className="txt-small text-ui-fg-subtle mb-4">
+                    By completing payment with PayPal, you accept our Terms of
+                    Use, Terms of Sale and Returns Policy and acknowledge our
+                    Privacy Policy.
+                  </Text>
+                  <PaypalPaymentButton
+                    cart={cart}
+                    notReady={
+                      !cart.shipping_address ||
+                      !cart.billing_address ||
+                      !cart.email ||
+                      (cart.shipping_methods?.length ?? 0) < 1
+                    }
+                  />
+                </>
+              ) : (
+                <Button onClick={() => setPaymentMethod(selectedPaymentMethod)}>
+                  Load PayPal checkout
+                </Button>
+              )}
+            </div>
+          )}
+
+          {(!isPaypal(selectedPaymentMethod) || paidByGiftcard) && (
+            <Button
+              size="large"
+              className="mt-6"
+              onClick={handleSubmit}
+              isLoading={isLoading}
+              disabled={
+                isLoading ||
+                (isStripeLike(selectedPaymentMethod) && !cardComplete) ||
+                (!selectedPaymentMethod && !paidByGiftcard)
+              }
+              data-testid="submit-payment-button"
+            >
+              {!activeSession && isStripeLike(selectedPaymentMethod)
+                ? " Enter card details"
+                : "Continue to review"}
+            </Button>
+          )}
         </div>
 
         <div className={isOpen ? "hidden" : "block"}>

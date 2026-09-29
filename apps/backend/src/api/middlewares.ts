@@ -1,10 +1,16 @@
 import { authenticate, defineMiddlewares } from "@medusajs/framework/http"
+import { validatePaypalCapture } from "./admin/payments/validate-paypal-capture"
 import { preventDuplicateProductCreate } from "./admin/products/prevent-duplicate-create"
 import { removeProductOptionsSafely } from "./admin/products/remove-options"
 import { validateDesignCartItem, preventDesignSnapshotEdit, validateCartDesignAvailability } from "./store/design-cart-middleware"
 
 export default defineMiddlewares({
   routes: [
+    {
+      matcher: "/admin/payments/:id/capture",
+      methods: ["POST"],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"]), validatePaypalCapture],
+    },
     { matcher: "/admin/products/:id/options/batch", methods: ["POST"], middlewares: [authenticate("user", ["session", "bearer", "api-key"]), removeProductOptionsSafely] },
     { matcher: "/store/carts/:id/line-items", methods: ["POST"], middlewares: [validateDesignCartItem] },
     { matcher: "/store/carts/:id/line-items/:line_id", methods: ["POST"], middlewares: [preventDesignSnapshotEdit] },

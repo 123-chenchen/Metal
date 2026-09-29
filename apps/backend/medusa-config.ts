@@ -152,6 +152,18 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
+          ...(process.env.PAYPAL_ENABLED === "true"
+            ? [{
+                resolve: "./src/modules/paypal",
+                id: "paypal",
+                options: {
+                  clientId: process.env.PAYPAL_CLIENT_ID,
+                  clientSecret: process.env.PAYPAL_CLIENT_SECRET,
+                  environment: process.env.PAYPAL_ENVIRONMENT || "sandbox",
+                  webhookId: process.env.PAYPAL_WEBHOOK_ID,
+                },
+              }]
+            : []),
           {
             resolve: "./src/modules/sepay",
             id: "sepay",
