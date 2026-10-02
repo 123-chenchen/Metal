@@ -105,6 +105,14 @@ Automated tests mock PayPal APIs; they do not replace this sandbox checklist.
 
 ## Live deployment
 
+The storefront needs `NEXT_PUBLIC_PAYPAL_CLIENT_ID` during `next build`.
+Setting it only on a running container does not update the browser bundle.
+For Docker Compose, set it in `deploy/env/storefront.env` and include that file
+with `--env-file` when building, as shown in `deploy/README.md`. The production
+Compose file forwards it as a build argument to the storefront Dockerfile.
+Rebuild and recreate the storefront after changing the Client ID. The message
+"PayPal is not configured yet" means the browser bundle has no Client ID.
+
 Use a verified Business merchant account, its **live** app credentials and live
 webhook ID, set `PAYPAL_ENVIRONMENT=live`, and rebuild the storefront with the
 matching public Client ID. Keep the webhook publicly reachable over HTTPS and
